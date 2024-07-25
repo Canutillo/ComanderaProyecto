@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Comandera</string>
+    <string name="kongsoft">KongSoft</string>
+    <string name="comandas">Comandas</string>
 </resources>
