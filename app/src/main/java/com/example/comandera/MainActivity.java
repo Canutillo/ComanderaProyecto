@@ -77,7 +77,7 @@ String androidID;
         @Override
         protected void onPostExecute(Integer seccionId) {
             if (seccionId != null) {
-                new GetActiveUser().execute(seccionId);
+                new GetActiveUser(androidID).execute(seccionId);
             } else {
                 Toast.makeText(MainActivity.this, "No se encontró la sección", Toast.LENGTH_SHORT).show();
             }
@@ -115,12 +115,17 @@ String androidID;
     // Obtener el usuario activo de la sección
     private class GetActiveUser extends AsyncTask<Integer, Void, FichaPersonal> {
         int seccionId;
+        int usuarioId;
+        String macAddress;
+        public GetActiveUser(String macAddress) {
+            this.macAddress = macAddress;
+        }
         @Override
         protected FichaPersonal doInBackground(Integer... params) {
             seccionId = params[0];
             SQLServerConnection sqlServerConnection = new SQLServerConnection(MainActivity.this);
             UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            return usuariosBD.getActiveUser();
+            return usuariosBD.getActiveUser(macAddress);
         }
 
         @Override

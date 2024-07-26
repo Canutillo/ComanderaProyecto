@@ -75,52 +75,92 @@ public class UsuariosBD {
         return exists;
     }
 
-    public FichaPersonal getActiveUser() {
+    public FichaPersonal getActiveUser(String macAddress) {
         FichaPersonal activeUser = null;
+        int usuarioId = -1;
         try {
             Connection connection = sqlConnection.connect();
             if (connection != null) {
-                String query = "SELECT id, usuario_app, contrasena_app, seccion_id_1, seccion_id_2, seccion_id_3, acceso_tpv, estado " +
-                        "FROM Ficha_Personal WHERE activo = 1 AND estado = 0 AND acceso_tpv = 1";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                ResultSet resultSet = preparedStatement.executeQuery();
+                String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
+                PreparedStatement getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                getDeviceIdStmt.setString(1, macAddress);
+                ResultSet deviceIdResultSet = getDeviceIdStmt.executeQuery();
 
-                if (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String usuarioApp = resultSet.getString("usuario_app");
-                    String contrasenaApp = resultSet.getString("contrasena_app");
-                    int seccionId1 = resultSet.getInt("seccion_id_1");
-                    int seccionId2 = resultSet.getInt("seccion_id_2");
-                    int seccionId3 = resultSet.getInt("seccion_id_3");
-                    boolean accesoTpv = resultSet.getBoolean("acceso_tpv");
-                    int estado = resultSet.getInt("estado");
-                    activeUser = new FichaPersonal(id, usuarioApp, contrasenaApp, seccionId1, seccionId2, seccionId3, accesoTpv, estado);
+                int deviceId = -1;
+                if (deviceIdResultSet.next()) {
+                    deviceId = deviceIdResultSet.getInt("id");
                 }
 
-                resultSet.close();
-                preparedStatement.close();
-                connection.close();
+                if (deviceId != -1) {
+                    // Verificar si la MAC tiene un usuario asociado
+                    String macCheckQuery = "SELECT id_usuario FROM Dispositivos_usuarios WHERE id_dispositivo = ?";
+                    PreparedStatement macCheckStmt = connection.prepareStatement(macCheckQuery);
+                    macCheckStmt.setInt(1, deviceId);
+                    ResultSet macCheckResult = macCheckStmt.executeQuery();
+
+                    if (macCheckResult.next()) {
+                        // La MAC está asociada con el usuario
+                        usuarioId = macCheckResult.getInt("id_usuario");
+                        String userQuery = "SELECT id, usuario_app, contrasena_app, seccion_id_1, seccion_id_2, seccion_id_3, acceso_tpv, estado " +
+                                "FROM Ficha_Personal WHERE id = ? AND estado = 0 AND acceso_tpv = 1";
+                        PreparedStatement userStmt = connection.prepareStatement(userQuery);
+                        userStmt.setInt(1, usuarioId);
+                        ResultSet userResult = userStmt.executeQuery();
+
+                        if (userResult.next()) {
+                            int id = userResult.getInt("id");
+                            String usuarioApp = userResult.getString("usuario_app");
+                            String contrasenaApp = userResult.getString("contrasena_app");
+                            int seccionId1 = userResult.getInt("seccion_id_1");
+                            int seccionId2 = userResult.getInt("seccion_id_2");
+                            int seccionId3 = userResult.getInt("seccion_id_3");
+                            boolean accesoTpv = userResult.getBoolean("acceso_tpv");
+                            int estado = userResult.getInt("estado");
+                            activeUser = new FichaPersonal(id, usuarioApp, contrasenaApp, seccionId1, seccionId2, seccionId3, accesoTpv, estado);
+                        }
+
+                        userResult.close();
+                        userStmt.close();
+                    }
+
+                    macCheckResult.close();
+                    macCheckStmt.close();
+                    connection.close();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return activeUser;
     }
-    public boolean setActiveUser(int userId, boolean activo) {
+
+    public boolean setActiveUser(int userId, String macAddress) {
         boolean success = false;
         try {
             Connection connection = sqlConnection.connect();
             if (connection != null) {
-                String query = "UPDATE Ficha_Personal SET activo = ? WHERE id = ?";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setBoolean(1, activo);
-                preparedStatement.setInt(2, userId);
+                String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
+                PreparedStatement getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                getDeviceIdStmt.setString(1, macAddress);
+                ResultSet deviceIdResultSet = getDeviceIdStmt.executeQuery();
 
-                int rowsAffected = preparedStatement.executeUpdate();
-                success = rowsAffected > 0;
+                int deviceId = -1;
+                if (deviceIdResultSet.next()) {
+                    deviceId = deviceIdResultSet.getInt("id");
+                }
 
-                preparedStatement.close();
-                connection.close();
+                if (deviceId != -1) {
+                    String query = "INSERT INTO Dispositivos_usuarios (id_dispositivo, id_usuario) VALUES (?, ?)";
+                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setInt(1, deviceId);
+                    preparedStatement.setInt(2, userId);
+
+                    int rowsAffected = preparedStatement.executeUpdate();
+                    success = rowsAffected > 0;
+
+                    preparedStatement.close();
+                    connection.close();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

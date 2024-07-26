@@ -1,0 +1,19 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="7dp"
+    android:paddingBottom="6dp">
+
+    <TextView
+        android:id="@+id/textViewNombre"
+        android:layout_width="95dp"
+        android:layout_height="110dp"
+        android:background="@drawable/borde_redondo"
+        android:backgroundTint="#518E8F8F"
+        android:gravity="center"
+        android:text="Zona"
+        android:textColor="#6E6D6D"
+        android:textSize="18dp" />
+
+</LinearLayout>

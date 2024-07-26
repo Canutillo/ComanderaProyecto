@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.UsuariosBD;
+import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.FichaPersonal;
 
 public class ContrasenaActivity extends AppCompatActivity {
@@ -29,7 +30,7 @@ public class ContrasenaActivity extends AppCompatActivity {
     EditText contrasena;
     CheckBox checkActivo;
     int seccionId;
-
+    String androidID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +47,7 @@ public class ContrasenaActivity extends AppCompatActivity {
         checkActivo = findViewById(R.id.checkActivo);
 
         seccionId = getIntent().getIntExtra("seccionId", -1);
+        androidID = DeviceInfo.getAndroidID(this);
 
 
         mostrarTeclado();
@@ -92,7 +94,7 @@ public class ContrasenaActivity extends AppCompatActivity {
             int userId = params[0];
             SQLServerConnection sqlServerConnection = new SQLServerConnection(ContrasenaActivity.this);
             UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            return usuariosBD.setActiveUser(userId, true);
+            return usuariosBD.setActiveUser(userId, androidID);
         }
 
         @Override
