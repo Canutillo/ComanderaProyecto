@@ -78,13 +78,21 @@ public class UsuariosBD {
     public FichaPersonal getActiveUser(String macAddress) {
         FichaPersonal activeUser = null;
         int usuarioId = -1;
+        Connection connection = null;
+        PreparedStatement getDeviceIdStmt = null;
+        ResultSet deviceIdResultSet = null;
+        PreparedStatement macCheckStmt = null;
+        ResultSet macCheckResult = null;
+        PreparedStatement userStmt = null;
+        ResultSet userResult = null;
+
         try {
-            Connection connection = sqlConnection.connect();
+            connection = sqlConnection.connect();
             if (connection != null) {
                 String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
-                PreparedStatement getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
                 getDeviceIdStmt.setString(1, macAddress);
-                ResultSet deviceIdResultSet = getDeviceIdStmt.executeQuery();
+                deviceIdResultSet = getDeviceIdStmt.executeQuery();
 
                 int deviceId = -1;
                 if (deviceIdResultSet.next()) {
@@ -94,18 +102,18 @@ public class UsuariosBD {
                 if (deviceId != -1) {
                     // Verificar si la MAC tiene un usuario asociado
                     String macCheckQuery = "SELECT id_usuario FROM Dispositivos_usuarios WHERE id_dispositivo = ?";
-                    PreparedStatement macCheckStmt = connection.prepareStatement(macCheckQuery);
+                    macCheckStmt = connection.prepareStatement(macCheckQuery);
                     macCheckStmt.setInt(1, deviceId);
-                    ResultSet macCheckResult = macCheckStmt.executeQuery();
+                    macCheckResult = macCheckStmt.executeQuery();
 
                     if (macCheckResult.next()) {
                         // La MAC está asociada con el usuario
                         usuarioId = macCheckResult.getInt("id_usuario");
                         String userQuery = "SELECT id, usuario_app, contrasena_app, seccion_id_1, seccion_id_2, seccion_id_3, acceso_tpv, estado " +
                                 "FROM Ficha_Personal WHERE id = ? AND estado = 0 AND acceso_tpv = 1";
-                        PreparedStatement userStmt = connection.prepareStatement(userQuery);
+                        userStmt = connection.prepareStatement(userQuery);
                         userStmt.setInt(1, usuarioId);
-                        ResultSet userResult = userStmt.executeQuery();
+                        userResult = userStmt.executeQuery();
 
                         if (userResult.next()) {
                             int id = userResult.getInt("id");
@@ -118,21 +126,27 @@ public class UsuariosBD {
                             int estado = userResult.getInt("estado");
                             activeUser = new FichaPersonal(id, usuarioApp, contrasenaApp, seccionId1, seccionId2, seccionId3, accesoTpv, estado);
                         }
-
-                        userResult.close();
-                        userStmt.close();
                     }
-
-                    macCheckResult.close();
-                    macCheckStmt.close();
-                    connection.close();
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (userResult != null) userResult.close();
+                if (userStmt != null) userStmt.close();
+                if (macCheckResult != null) macCheckResult.close();
+                if (macCheckStmt != null) macCheckStmt.close();
+                if (deviceIdResultSet != null) deviceIdResultSet.close();
+                if (getDeviceIdStmt != null) getDeviceIdStmt.close();
+                if (connection != null) connection.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return activeUser;
     }
+
 
     public boolean setActiveUser(int userId, String macAddress) {
         boolean success = false;

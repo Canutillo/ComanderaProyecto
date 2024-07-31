@@ -32,6 +32,7 @@ public class MesasActivity extends AppCompatActivity {
     FichaPersonal fichaPersonal;
     TextView tvUser;
     int seccionId;
+    String zonaVenta;
     RecyclerView recyclerViewZonas, recyclerViewMesas;
     ZonasAdapter zonasAdapter;
     MesasAdapter mesasAdapter;
@@ -57,7 +58,6 @@ public class MesasActivity extends AppCompatActivity {
         fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
         seccionId = getIntent().getIntExtra("seccionId", -1);
 
-        System.out.println("a"+ seccionId);
         if(fichaPersonal != null){
             tvUser.setText("Comandera/ " +fichaPersonal.getUsuarioApp());
             new GetZonas().execute(seccionId);
@@ -78,6 +78,9 @@ public class MesasActivity extends AppCompatActivity {
                 zonasAdapter = new ZonasAdapter(zonasVenta, new ZonasAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(int zonaId) {
+                        ZonaVenta zv = zonasVenta.get(zonaId-1);
+                        zonaVenta = zv.getZona();
+
                         new GetMesas().execute(zonaId);
                     }
                 });
@@ -87,9 +90,10 @@ public class MesasActivity extends AppCompatActivity {
     }
 
     private class GetMesas extends AsyncTask<Integer, Void, List<Mesa>> {
+        int zonaId;
         @Override
         protected List<Mesa> doInBackground(Integer... params) {
-            int zonaId = params[0];
+            zonaId = params[0];
             SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
             MesasBD mesasBD = new MesasBD(sqlServerConnection);
             return mesasBD.getMesasByZonaId(zonaId);
@@ -98,10 +102,20 @@ public class MesasActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Mesa> mesas) {
             if (!mesas.isEmpty() && mesas != null) {
-                mesasAdapter = new MesasAdapter(mesas);
+                mesasAdapter = new MesasAdapter(mesas, new MesasAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(String mesaNombre) {
+                        Intent intent = new Intent(MesasActivity.this, ComensalesActivity.class);
+                        intent.putExtra("mesaNombre", mesaNombre);
+                        intent.putExtra("zonaVenta", zonaVenta);
+                        intent.putExtra("zonaId", zonaId);
+                        intent.putExtra("fichaPersonal", fichaPersonal);
+                        startActivity(intent);
+                    }
+                });
                 recyclerViewMesas.setAdapter(mesasAdapter);
             } else {
-                mesasAdapter = new MesasAdapter(new ArrayList<>());
+                mesasAdapter = new MesasAdapter(new ArrayList<>(), null);
                 recyclerViewMesas.setAdapter(mesasAdapter);
                 Toast.makeText(MesasActivity.this, "No se encontraron mesas para esta zona", Toast.LENGTH_SHORT).show();
             }

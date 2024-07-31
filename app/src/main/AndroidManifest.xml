@@ -16,12 +16,18 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".FamiliasActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ComensalesActivity"
+            android:exported="false" />
+        <activity
             android:name=".MesasActivity"
             android:exported="false" />
         <activity
             android:name=".ContrasenaActivity"
             android:exported="false"
-            android:windowSoftInputMode="stateVisible|adjustResize"/>
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
             android:name=".UsuariosActivity"
             android:exported="false" />

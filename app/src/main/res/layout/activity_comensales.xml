@@ -5,10 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MesasActivity"
-    android:layout_marginRight="7dp">
+    tools:context=".ComensalesActivity">
 
-    <!-- TextView para mostrar el usuario -->
     <TextView
         android:id="@+id/tvUser"
         android:layout_width="match_parent"
@@ -21,15 +19,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Barra de selección y botón salir -->
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="412dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvUser">
+        app:layout_constraintTop_toBottomOf="@+id/tvUser"
+        tools:layout_editor_absoluteX="0dp">
 
         <TextView
             android:id="@+id/tvText"
@@ -38,7 +34,7 @@
             android:layout_weight="1"
             android:paddingLeft="10dp"
             android:paddingBottom="10dp"
-            android:text="Seleccionar Mesa"
+            android:text="Introducir comensales"
             android:textSize="26sp" />
 
         <Button
@@ -53,35 +49,65 @@
             app:iconTint="#575656" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewZonas"
-        android:paddingBottom="25dp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/volver"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.042">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewMesas"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/volver"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recyclerViewZonas" />
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="92dp"
+            android:layout_height="105dp"
+            app:srcCompat="@drawable/comensal" />
 
-    <!-- Botón volver -->
+        <Space
+            android:layout_width="401dp"
+            android:layout_height="36dp" />
+
+        <TextView
+            android:id="@+id/zona"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="44dp" />
+
+        <EditText
+            android:id="@+id/editTextComensales"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number"
+            android:singleLine="true"
+            android:textAlignment="center"
+            android:textAllCaps="true" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="44dp" />
+
+    </LinearLayout>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/volver"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:gravity="center"
+        android:layout_margin="16dp"
+        android:background="@drawable/border"
         app:backgroundTint="#00D3D1D1"
         app:icon="@drawable/volver"
         app:iconSize="30dp"
         app:iconTint="#575656"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
