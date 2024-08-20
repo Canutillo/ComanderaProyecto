@@ -5,10 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MesasActivity"
-    android:layout_marginRight="7dp">
+    tools:context=".FamiliasActivity">
 
-    <!-- TextView para mostrar el usuario -->
     <TextView
         android:id="@+id/tvUser"
         android:layout_width="match_parent"
@@ -18,14 +16,14 @@
         android:text="TextView"
         android:textColor="#636363"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Barra de selección y botón salir -->
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="412dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,9 +34,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:freezesText="true"
             android:paddingLeft="10dp"
             android:paddingTop="5dp"
-            android:text="Seleccionar Mesa"
+            android:text="Familias y Categorías"
             android:textSize="26sp" />
 
         <Button
@@ -51,54 +50,69 @@
             app:icon="@drawable/salida"
             app:iconSize="30dp"
             app:iconTint="#575656" />
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewZonas"
-        android:paddingBottom="25dp"
+        android:id="@+id/recyclerViewArticulos"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewMesas"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="360dp"
+        android:layout_marginTop="9dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="8dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recyclerViewZonas" />
-
-    <!-- Botón volver -->
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.0" />
+    <include
+        android:id="@+id/recyclerTicket"
+        layout="@layout/activity_ticket"
+        android:layout_width="match_parent"
+        android:layout_height="340dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="6dp"
+        />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="410dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <Space
-            android:layout_width="332dp"
+        <LinearLayout
+            android:id="@+id/linearLayout3"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/volver"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/border"
-            app:backgroundTint="#00D3D1D1"
-            app:icon="@drawable/volver"
-            app:iconSize="30dp"
-            app:iconTint="#575656"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
+            <Space
+                android:layout_width="254dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/volver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                app:backgroundTint="#00D3D1D1"
+                app:icon="@drawable/volver"
+                app:iconSize="30dp"
+                app:iconTint="#575656"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </LinearLayout>
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

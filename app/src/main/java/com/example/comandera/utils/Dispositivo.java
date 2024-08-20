@@ -3,6 +3,7 @@ package com.example.comandera.utils;
 public class Dispositivo {
     int id;
     String descripcion;
+    int seccionId;
 
     public Dispositivo(int id, String descripcion) {
         this.id = id;
@@ -23,6 +24,14 @@ public class Dispositivo {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public int getSeccionId() {
+        return seccionId;
+    }
+
+    public void setSeccionId(int seccionId) {
+        this.seccionId = seccionId;
     }
 
     @Override

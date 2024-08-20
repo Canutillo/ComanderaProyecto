@@ -3,7 +3,6 @@ package com.example.comandera.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,7 +19,7 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(String mesaNombre);
+        void onItemClick(String mesaNombre, int id);
     }
     public MesasAdapter(List<Mesa> mesas, OnItemClickListener listener) {
         this.mesas = mesas;
@@ -58,7 +57,7 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v){
-                    listener.onItemClick(mesa.getNombre());
+                    listener.onItemClick(mesa.getNombre(), mesa.getId());
                 }
             });
         }

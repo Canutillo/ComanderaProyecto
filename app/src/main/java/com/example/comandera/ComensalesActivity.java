@@ -19,6 +19,7 @@ import com.example.comandera.utils.FichaPersonal;
 public class ComensalesActivity extends AppCompatActivity {
     TextView tvZona;
     EditText comensales;
+    int mesaId, seccionId;
     TextView tvUser;
     FichaPersonal fichaPersonal;
     @Override
@@ -36,6 +37,9 @@ public class ComensalesActivity extends AppCompatActivity {
         tvUser = findViewById(R.id.tvUser);
         comensales = findViewById(R.id.editTextComensales);
         fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
+        mesaId = getIntent().getIntExtra("mesaId", -1);
+        seccionId = getIntent().getIntExtra("seccionId", -1);
+
 
         if(fichaPersonal != null){
             tvUser.setText("Comandera/ " +fichaPersonal.getUsuarioApp());
@@ -51,7 +55,12 @@ public class ComensalesActivity extends AppCompatActivity {
                         int zonaId = getIntent().getIntExtra("zonaId", -1);
                         i.putExtra("fichaPersonal", fichaPersonal);
                         i.putExtra("zonaId", zonaId);
-                        startActivity(i);
+                        i.putExtra("mesaId", mesaId);
+                        i.putExtra("seccionId", seccionId);
+                    System.out.println("ca"+comensales);
+
+                    i.putExtra("comensales", Integer.parseInt(comensales.getText().toString()));
+                    startActivity(i);
                     return true;
                 }
                 return false;

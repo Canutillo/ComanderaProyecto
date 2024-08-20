@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingLeft="10dp"
-            android:paddingBottom="15dp"
+            android:paddingTop="5dp"
             android:text="Familias y Categorías"
             android:textSize="26sp" />
 
@@ -55,9 +55,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewFamilias"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="360dp"
         android:layout_marginTop="9dp"
-        android:layout_marginLeft="26dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="6dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -65,19 +66,43 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
         app:layout_constraintVertical_bias="0.0" />
 
+    <include
+        android:id="@+id/recyclerTicket"
+        layout="@layout/activity_ticket"
+        android:layout_width="match_parent"
+        android:layout_height="340dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="6dp"
+        />
+
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
+        android:layout_width="410dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-        <Button
-            android:id="@+id/button3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <Space
+            android:layout_width="254dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/volver"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Button" />
+            android:background="@drawable/border"
+            app:backgroundTint="#00D3D1D1"
+            app:icon="@drawable/volver"
+            app:iconSize="30dp"
+            app:iconTint="#575656"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

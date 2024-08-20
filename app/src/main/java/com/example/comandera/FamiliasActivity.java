@@ -18,14 +18,16 @@ import com.example.comandera.adapters.FamiliasAdapter;
 import com.example.comandera.data.FamiliasBD;
 import com.example.comandera.utils.Familia;
 import com.example.comandera.utils.FichaPersonal;
+import com.example.comandera.utils.Ticket;
 
 import java.util.List;
 
 public class FamiliasActivity extends AppCompatActivity {
     RecyclerView recyclerViewFamilias;
-    FichaPersonal fichaPersonal;
+    FichaPersonal  fichaPersonal;
     TextView tvUser;
-
+    int zonaId, mesaId, comensales, seccionId;
+    Ticket ticket;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,13 +40,20 @@ public class FamiliasActivity extends AppCompatActivity {
         });
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
         tvUser = findViewById(R.id.tvUser);
-        recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
+        ticket = getIntent().getParcelableExtra("ticket");
+        System.out.println("ticket"+ticket);
+        seccionId = getIntent().getIntExtra("seccionId", -1);
+        comensales = getIntent().getIntExtra("comensales", -1);
+
 
         if(fichaPersonal != null){
             tvUser.setText("Comandera/ " +fichaPersonal.getUsuarioApp());
         }
-        int zonaId = getIntent().getIntExtra("zonaId", -1);
+        zonaId = getIntent().getIntExtra("zonaId", -1);
+        mesaId = getIntent().getIntExtra("mesaId", -1);
+
 
         new GetVisibleFamilias().execute(zonaId);
     }
@@ -60,8 +69,7 @@ public class FamiliasActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Familia> familias) {
             if (familias != null && !familias.isEmpty()) {
-                System.out.println(familias.size());
-                FamiliasAdapter adapter = new FamiliasAdapter(FamiliasActivity.this, familias);
+                FamiliasAdapter adapter = new FamiliasAdapter(FamiliasActivity.this, familias, zonaId, fichaPersonal, mesaId, ticket, comensales, seccionId);
                 recyclerViewFamilias.setAdapter(adapter);
             } else {
                 Toast.makeText(FamiliasActivity.this, "No se encontraron familias visibles para esta zona", Toast.LENGTH_SHORT).show();

@@ -17,12 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.comandera.adapters.MesasAdapter;
 import com.example.comandera.adapters.ZonasAdapter;
+import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.MesasBD;
 import com.example.comandera.data.SQLServerConnection;
-import com.example.comandera.data.UsuariosBD;
+import com.example.comandera.data.TicketBD;
 import com.example.comandera.data.ZonasVentaBD;
+import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.Mesa;
+import com.example.comandera.utils.Ticket;
 import com.example.comandera.utils.ZonaVenta;
 
 import java.util.ArrayList;
@@ -31,11 +34,12 @@ import java.util.List;
 public class MesasActivity extends AppCompatActivity {
     FichaPersonal fichaPersonal;
     TextView tvUser;
-    int seccionId;
-    String zonaVenta;
+    int seccionId, zonaId, dispositivoId, mesaId;
+    String zonaVenta, nombreMesa, androidID;
     RecyclerView recyclerViewZonas, recyclerViewMesas;
     ZonasAdapter zonasAdapter;
     MesasAdapter mesasAdapter;
+    Ticket existingTicket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +66,30 @@ public class MesasActivity extends AppCompatActivity {
             tvUser.setText("Comandera/ " +fichaPersonal.getUsuarioApp());
             new GetZonas().execute(seccionId);
         }
+
+        // Obtener el ANDROID_ID
+        androidID = DeviceInfo.getAndroidID(this);
+
+        new GetIdTask().execute(androidID);
     }
+
+    private class GetIdTask extends AsyncTask<String, Void, Integer> {
+        @Override
+        protected Integer doInBackground(String... params) {
+            String mac = params[0];
+            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
+            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
+            return dispositivosBD.getId(mac);
+        }
+
+        @Override
+        protected void onPostExecute(Integer id) {
+            if (id != null) {
+                dispositivoId = id;
+            }
+        }
+    }
+
     private class GetZonas extends AsyncTask<Integer, Void, List<ZonaVenta>> {
         @Override
         protected List<ZonaVenta> doInBackground(Integer... params) {
@@ -90,7 +117,6 @@ public class MesasActivity extends AppCompatActivity {
     }
 
     private class GetMesas extends AsyncTask<Integer, Void, List<Mesa>> {
-        int zonaId;
         @Override
         protected List<Mesa> doInBackground(Integer... params) {
             zonaId = params[0];
@@ -104,13 +130,9 @@ public class MesasActivity extends AppCompatActivity {
             if (!mesas.isEmpty() && mesas != null) {
                 mesasAdapter = new MesasAdapter(mesas, new MesasAdapter.OnItemClickListener() {
                     @Override
-                    public void onItemClick(String mesaNombre) {
-                        Intent intent = new Intent(MesasActivity.this, ComensalesActivity.class);
-                        intent.putExtra("mesaNombre", mesaNombre);
-                        intent.putExtra("zonaVenta", zonaVenta);
-                        intent.putExtra("zonaId", zonaId);
-                        intent.putExtra("fichaPersonal", fichaPersonal);
-                        startActivity(intent);
+                    public void onItemClick(String mesaNombre, int mesaId) {
+                        nombreMesa = mesaNombre;
+                        new CheckTicketTask(mesaId, dispositivoId, seccionId, 1, fichaPersonal.getId()).execute();
                     }
                 });
                 recyclerViewMesas.setAdapter(mesasAdapter);
@@ -119,6 +141,51 @@ public class MesasActivity extends AppCompatActivity {
                 recyclerViewMesas.setAdapter(mesasAdapter);
                 Toast.makeText(MesasActivity.this, "No se encontraron mesas para esta zona", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    private class CheckTicketTask extends AsyncTask<Void, Void, Ticket> {
+        int mesaId, dispositivoId, seccionId, idSerie, idUsuarioTpv;
+
+        public CheckTicketTask(int mesaId, int dispositivoId, int seccionId, int idSerie, int idUsuarioTpv) {
+            this.mesaId = mesaId;
+            this.dispositivoId = dispositivoId;
+            this.seccionId = seccionId;
+            this.idSerie = idSerie;
+            this.idUsuarioTpv = idUsuarioTpv;
+        }
+
+        @Override
+        protected Ticket doInBackground(Void... voids) {
+            TicketBD ticketBD = new TicketBD(MesasActivity.this);
+            // Verificar si ya existe un ticket para la mesa seleccionada
+            Ticket existingTicket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
+            return existingTicket;
+        }
+
+        @Override
+        protected void onPostExecute(Ticket ticket) {
+            Intent intent;
+            existingTicket = ticket;
+            if (ticket != null) {
+                intent = new Intent(MesasActivity.this, FamiliasActivity.class);
+                intent.putExtra("mesaId", mesaId);
+                intent.putExtra("zonaVenta", zonaVenta);
+                intent.putExtra("zonaId", zonaId);
+                intent.putExtra("seccionId", seccionId);
+                intent.putExtra("fichaPersonal", fichaPersonal);
+                intent.putExtra("dispositivoId", dispositivoId);
+            }else{
+                intent = new Intent(MesasActivity.this, ComensalesActivity.class);
+                intent.putExtra("mesaId", mesaId);
+                intent.putExtra("zonaVenta", zonaVenta);
+                intent.putExtra("mesaNombre", nombreMesa);
+                intent.putExtra("zonaId", zonaId);
+                intent.putExtra("seccionId", seccionId);
+                intent.putExtra("fichaPersonal", fichaPersonal);
+                intent.putExtra("dispositivoId", dispositivoId);
+            }
+            startActivity(intent);
         }
     }
 }

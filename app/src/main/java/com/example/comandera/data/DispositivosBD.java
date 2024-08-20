@@ -88,6 +88,7 @@ public class DispositivosBD {
 
     public int getIdSeccion(String mac) {
         Integer seccionId = null;
+
         try {
             Connection connection = sqlConnection.connect();
             if (connection != null) {
@@ -108,5 +109,30 @@ public class DispositivosBD {
             e.printStackTrace();
         }
         return seccionId;
+    }
+
+    public int getId(String mac) {
+        Integer id = null;
+
+        try {
+            Connection connection = sqlConnection.connect();
+            if (connection != null) {
+                String query = "SELECT id FROM Dispositivos WHERE mac = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, mac);
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    id = resultSet.getInt("id");
+                }
+
+                resultSet.close();
+                preparedStatement.close();
+                connection.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return id;
     }
 }
