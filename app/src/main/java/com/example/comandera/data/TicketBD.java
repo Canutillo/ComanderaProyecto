@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class TicketBD {
@@ -153,5 +155,34 @@ public class TicketBD {
         resultSet.close();
         getMaxNumeroStatement.close();
         return (int) numeroCorriente;
+    }
+
+    public List<String> getDescripcionesLargasByCabeceraId(long cabeceraId) {
+        List<String> descripcionesLargas = new ArrayList<>();
+        Connection connection = sqlServerConnection.connect();
+        if (connection != null) {
+            String query = "SELECT descripcion_larga FROM Detalle_Documentos_Venta WHERE Cabecera_Id = ?";
+            try {
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setLong(1, cabeceraId);
+
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    descripcionesLargas.add(resultSet.getString("descripcion_larga"));
+                }
+
+                resultSet.close();
+                statement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return descripcionesLargas;
     }
 }

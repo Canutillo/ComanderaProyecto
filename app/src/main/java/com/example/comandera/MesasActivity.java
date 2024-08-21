@@ -165,26 +165,21 @@ public class MesasActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Ticket ticket) {
-            Intent intent;
+            Intent intent, i;
             existingTicket = ticket;
             if (ticket != null) {
                 intent = new Intent(MesasActivity.this, FamiliasActivity.class);
-                intent.putExtra("mesaId", mesaId);
-                intent.putExtra("zonaVenta", zonaVenta);
-                intent.putExtra("zonaId", zonaId);
-                intent.putExtra("seccionId", seccionId);
-                intent.putExtra("fichaPersonal", fichaPersonal);
-                intent.putExtra("dispositivoId", dispositivoId);
             }else{
                 intent = new Intent(MesasActivity.this, ComensalesActivity.class);
-                intent.putExtra("mesaId", mesaId);
-                intent.putExtra("zonaVenta", zonaVenta);
-                intent.putExtra("mesaNombre", nombreMesa);
-                intent.putExtra("zonaId", zonaId);
-                intent.putExtra("seccionId", seccionId);
-                intent.putExtra("fichaPersonal", fichaPersonal);
-                intent.putExtra("dispositivoId", dispositivoId);
             }
+
+            intent.putExtra("mesaId", mesaId);
+            intent.putExtra("zonaVenta", zonaVenta);
+            intent.putExtra("mesaNombre", nombreMesa);
+            intent.putExtra("zonaId", zonaId);
+            intent.putExtra("seccionId", seccionId);
+            intent.putExtra("fichaPersonal", fichaPersonal);
+            intent.putExtra("dispositivoId", dispositivoId);
             startActivity(intent);
         }
     }

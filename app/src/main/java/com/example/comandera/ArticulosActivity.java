@@ -1,5 +1,6 @@
 package com.example.comandera;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.comandera.adapters.ArticulosAdapter;
 import com.example.comandera.adapters.OpcionesAdapter;
+import com.example.comandera.adapters.TicketAdapter;
 import com.example.comandera.data.ArticulosBD;
 import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.PreguntasBD;
@@ -29,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArticulosActivity extends AppCompatActivity {
-    RecyclerView recyclerViewArticulos;
+    RecyclerView recyclerViewArticulos, recyclerTicket;
     int zonaId, comensales, familiaId;
     FichaPersonal fichaPersonal;
     TextView tvText, tvUser;
@@ -37,7 +39,7 @@ public class ArticulosActivity extends AppCompatActivity {
     String androidID;
     private Ticket existingTicket;
     private int mesaId, dispositivoId, seccionId, idSerie, idUsuarioTpv;
-
+    TicketAdapter ticketAdapter;
 
 
     @Override
@@ -48,6 +50,7 @@ public class ArticulosActivity extends AppCompatActivity {
         tvUser = findViewById(R.id.tvUser);
         tvText = findViewById(R.id.tvText);
         recyclerViewArticulos = findViewById(R.id.recyclerViewArticulos);
+        recyclerTicket = findViewById(R.id.recyclerTicket);
 
         androidID = DeviceInfo.getAndroidID(this);
 
@@ -62,6 +65,7 @@ public class ArticulosActivity extends AppCompatActivity {
         idUsuarioTpv = fichaPersonal.getId();
         comensales = getIntent().getIntExtra("comensales", -1);
         recyclerViewArticulos.setLayoutManager(new GridLayoutManager(this, 4));
+        recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
 
         if (fichaPersonal != null) {
             tvUser.setText("Comandera/ " + fichaPersonal.getUsuarioApp());
@@ -198,6 +202,8 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Ticket ticket) {
             existingTicket = ticket;
+            //actualizar la interfaz del ticket cuando añado un articulo
+            new LoadDescripcionesLargasTask().execute(existingTicket.getId());
             new GetPreguntas().execute(art.getId());
         }
     }
@@ -224,27 +230,6 @@ public class ArticulosActivity extends AppCompatActivity {
         protected void onPostExecute(Ticket ticket) {
             existingTicket = ticket;
             new GetPreguntas().execute(art.getId());
-        }
-    }
-
-    //coger el id del dispositivo, necesario para la bbdd
-    private class GetDispositivoIdTask extends AsyncTask<String, Void, Integer> {
-        @Override
-        protected Integer doInBackground(String... params) {
-            String androidID = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(ArticulosActivity.this);
-            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
-            return dispositivosBD.getId(androidID);
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            if (result != null) {
-                dispositivoId = result;
-            } else {
-                Toast.makeText(ArticulosActivity.this, "Error: No se encontró el dispositivo.", Toast.LENGTH_LONG).show();
-                finish();
-            }
         }
     }
 
@@ -280,4 +265,90 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
+    //apartir de aqui los task son para mostrar los articulos en el ticket
+    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<String>> {
+        @Override
+        protected List<String> doInBackground(Integer... params) {
+            int cabeceraId = params[0];
+            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
+        }
+
+        @Override
+        protected void onPostExecute(List<String> descripcionesLargas) {
+            if (descripcionesLargas != null && !descripcionesLargas.isEmpty()) {
+                if (ticketAdapter == null) {
+                    ticketAdapter = new TicketAdapter(ArticulosActivity.this, descripcionesLargas);
+                    recyclerTicket.setAdapter(ticketAdapter);
+                } else {
+                    // Si el adaptador ya existe, actualizamos su lista
+                    ticketAdapter.updateData(descripcionesLargas);
+                }
+            } else {
+                Toast.makeText(ArticulosActivity.this, "No se encontraron descripciones largas.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //coger el id del dispositivo, necesario para la bbdd
+    private class GetDispositivoIdTask extends AsyncTask<String, Void, Integer> {
+        @Override
+        protected Integer doInBackground(String... params) {
+            String androidID = params[0];
+            SQLServerConnection sqlServerConnection = new SQLServerConnection(ArticulosActivity.this);
+            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
+            return dispositivosBD.getId(androidID);
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            if (result != null) {
+                dispositivoId = result;
+
+                // Llamar al método para cargar y mostrar descripciones una vez que dispositivoId esté disponible
+                loadAndDisplayDescriptions();
+            } else {
+                Toast.makeText(ArticulosActivity.this, "Error: No se encontró el dispositivo.", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
+    }
+
+    private void loadAndDisplayDescriptions() {
+        new LoadTicketAndDescriptionsTask().execute(mesaId, dispositivoId, seccionId);
+    }
+
+    private class LoadTicketAndDescriptionsTask extends AsyncTask<Integer, Void, Ticket> {
+        private int cabeceraId = -1;
+
+        @Override
+        protected Ticket doInBackground(Integer... params) {
+            int mesaId = params[0];
+            int dispositivoId = params[1];
+            int seccionId = params[2];
+
+            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            Ticket ticket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
+
+            if (ticket != null) {
+                cabeceraId = ticket.getId();
+            }
+
+            return ticket;
+        }
+
+        @Override
+        protected void onPostExecute(Ticket ticket) {
+            if (ticket != null) {
+                System.out.println("Cabecera ID: " + cabeceraId);
+
+                if (cabeceraId > 0) {
+                    new ArticulosActivity.LoadDescripcionesLargasTask().execute(cabeceraId);
+                } else {
+                    Toast.makeText(ArticulosActivity.this, "Error: Cabecera ID inválido.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+            }
+        }
+    }
 }
