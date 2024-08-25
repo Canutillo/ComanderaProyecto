@@ -120,9 +120,6 @@ public class TicketBD {
                 ResultSet generatedKeys = insertStatement.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     newRowId = generatedKeys.getLong(1);
-
-                    // Insertar el detalle del documento de venta
-                    addDetalleDocumentoVenta(newRowId, articuloId, cantidad, desc_articulo, desc_larga);
                 }
 
                 generatedKeys.close();

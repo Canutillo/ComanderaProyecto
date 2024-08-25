@@ -1,5 +1,7 @@
 package com.example.comandera;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -25,6 +27,11 @@ import com.example.comandera.utils.Familia;
 import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.Ticket;
 
+import android.content.IntentFilter;
+
+import android.content.BroadcastReceiver;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import java.util.List;
 
 public class FamiliasActivity extends AppCompatActivity {
@@ -47,6 +54,7 @@ public class FamiliasActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter("com.example.comandera.UPDATE_FAMILIAS"));
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
         recyclerTicket = findViewById(R.id.recyclerTicket);
@@ -73,6 +81,22 @@ public class FamiliasActivity extends AppCompatActivity {
         new GetVisibleFamilias().execute(zonaId);
     }
 
+    // BroadcastReceiver para manejar actualizaciones de ticket
+    private BroadcastReceiver updateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("com.example.comandera.UPDATE_FAMILIAS")) {
+                loadAndDisplayDescriptions();
+                Toast.makeText(FamiliasActivity.this, "Se ha actualizado el ticket", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
+    }
     private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<String>> {
         @Override
         protected List<String> doInBackground(Integer... params) {

@@ -89,6 +89,7 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
             }
             intent.putExtra("fichaPersonal", fichaPersonal);
             intent.putExtra("seccionId", seccionId);
+            System.out.println("AQUI"+seccionId);
             startActivity(intent);
             finish();
         }

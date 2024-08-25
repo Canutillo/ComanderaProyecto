@@ -29,6 +29,7 @@ public class ConfigActivity extends AppCompatActivity {
 Spinner spinner;
 Button bGuardarMAC;
 String androidID;
+int seccionID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +104,6 @@ String androidID;
             super.onPostExecute(success);
             if (success) {
                 Toast.makeText(ConfigActivity.this, "MAC actualizada exitosamente", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(ConfigActivity.this, UsuariosActivity.class);
-                startActivity(i);
             } else {
                 Toast.makeText(ConfigActivity.this, "Error al actualizar la MAC", Toast.LENGTH_SHORT).show();
             }
@@ -123,6 +122,7 @@ String androidID;
 
         @Override
         protected void onPostExecute(Integer seccionId) {
+            seccionID = seccionId;
             if (seccionId != null) {
                 new GetUsers().execute(seccionId);
             } else {
@@ -147,6 +147,7 @@ String androidID;
                 // Si hay usuarios vamos a la página de usuarios pasándole desde aqui la lista de usuarios
                 Intent intent = new Intent(ConfigActivity.this, UsuariosActivity.class);
                 intent.putParcelableArrayListExtra("listaUsuarios", new ArrayList<>(fichas));
+                intent.putExtra("seccionId", seccionID);
                 startActivity(intent);
             } else {
                 // Si no hay usuarios que salte directamente a la pagina de las mesas

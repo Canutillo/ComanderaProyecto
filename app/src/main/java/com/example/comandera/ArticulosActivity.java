@@ -27,12 +27,14 @@ import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.PreguntaArticulo;
 import com.example.comandera.utils.Ticket;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArticulosActivity extends AppCompatActivity {
     RecyclerView recyclerViewArticulos, recyclerTicket;
-    int zonaId, comensales, familiaId;
+    int zonaId, comensales, familiaId, cabeceraId;
     FichaPersonal fichaPersonal;
     TextView tvText, tvUser;
     Articulo art;
@@ -104,6 +106,7 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
+    //coger las preguntas que tiene cada articulo
     private class GetPreguntas extends AsyncTask<Integer, Void, List<PreguntaArticulo>> {
         @Override
         protected List<PreguntaArticulo> doInBackground(Integer... params) {
@@ -128,6 +131,7 @@ public class ArticulosActivity extends AppCompatActivity {
         new GetOpciones(preguntas, index, opcionesSeleccionadas).execute(pregunta);
     }
 
+    //coge las opciones que hay para cada pregunta y con el metodo de arriba las muestra
     private class GetOpciones extends AsyncTask<PreguntaArticulo, Void, List<String>> {
         private List<PreguntaArticulo> preguntas;
         private int index;
@@ -205,22 +209,34 @@ public class ArticulosActivity extends AppCompatActivity {
             //actualizar la interfaz del ticket cuando añado un articulo
             new LoadDescripcionesLargasTask().execute(existingTicket.getId());
             new GetPreguntas().execute(art.getId());
+            updateFamiliasActivity();
         }
+    }
+
+    private void updateFamiliasActivity() {
+        Intent intent = new Intent("com.example.comandera.UPDATE_FAMILIAS");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     //crear el ticket
     private class CreateTicketTask extends AsyncTask<Void, Void, Ticket> {
+        private Articulo articulo;
+
+        public CreateTicketTask(Articulo articulo) {
+            this.articulo = articulo;
+        }
+
         @Override
         protected Ticket doInBackground(Void... voids) {
             TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
 
-            // Verificar si existe un ticket para la mesa
+            // Crear un nuevo ticket
+            long newTicketId = ticketBD.createNewTicket(idSerie, seccionId, dispositivoId, mesaId, idUsuarioTpv, comensales, articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
             existingTicket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
 
-            if (existingTicket == null) {
-                // Crear un nuevo ticket si no existe
-                long newTicketId = ticketBD.createNewTicket(idSerie, seccionId, dispositivoId, mesaId, idUsuarioTpv, comensales, art.getId(), 1, art.getNombre(), art.getNombre());
-                existingTicket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
+            if (existingTicket != null) {
+                // Agregar el artículo al ticket recién creado
+                ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
             }
 
             return existingTicket;
@@ -229,9 +245,17 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Ticket ticket) {
             existingTicket = ticket;
-            new GetPreguntas().execute(art.getId());
+
+            if (existingTicket != null) {
+                // Actualizar la interfaz para mostrar el nuevo artículo en el ticket
+                new LoadDescripcionesLargasTask().execute(existingTicket.getId());
+            }
+
+            // Cargar y mostrar preguntas asociadas al artículo
+            new GetPreguntas().execute(articulo.getId());
         }
     }
+
 
     //comprobar si ya existe un ticket, si ya existe te devuelve el ticket
     private class GetTicketTask extends AsyncTask<Void, Void, Ticket> {
@@ -256,14 +280,15 @@ public class ArticulosActivity extends AppCompatActivity {
             existingTicket = ticket;
 
             if (existingTicket == null) {
-                // Si no existe un ticket, crear uno antes de continuar
-                new CreateTicketTask().execute();
+                // Si no existe un ticket, crear uno y añadir el artículo
+                new CreateTicketTask(art).execute();
             } else {
                 // Si el ticket ya existe, agregar el artículo al ticket existente
                 new AddArticuloToTicketTask().execute(art);
             }
         }
     }
+
 
     //apartir de aqui los task son para mostrar los articulos en el ticket
     private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<String>> {
@@ -319,8 +344,6 @@ public class ArticulosActivity extends AppCompatActivity {
     }
 
     private class LoadTicketAndDescriptionsTask extends AsyncTask<Integer, Void, Ticket> {
-        private int cabeceraId = -1;
-
         @Override
         protected Ticket doInBackground(Integer... params) {
             int mesaId = params[0];
@@ -340,8 +363,6 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Ticket ticket) {
             if (ticket != null) {
-                System.out.println("Cabecera ID: " + cabeceraId);
-
                 if (cabeceraId > 0) {
                     new ArticulosActivity.LoadDescripcionesLargasTask().execute(cabeceraId);
                 } else {

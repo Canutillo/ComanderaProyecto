@@ -93,7 +93,7 @@ public class MesasActivity extends AppCompatActivity {
     private class GetZonas extends AsyncTask<Integer, Void, List<ZonaVenta>> {
         @Override
         protected List<ZonaVenta> doInBackground(Integer... params) {
-            int seccionId = params[0];
+            seccionId = params[0];
             SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
             ZonasVentaBD zonasBD = new ZonasVentaBD(sqlServerConnection);
             return zonasBD.getZonasBySeccionId(seccionId);

@@ -24,6 +24,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 String androidID;
+int seccionID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,7 @@ String androidID;
 
         @Override
         protected void onPostExecute(Integer seccionId) {
+            seccionID = seccionId;
             if (seccionId != null) {
                 new GetActiveUser(androidID).execute(seccionId);
             } else {
@@ -86,13 +88,12 @@ String androidID;
 
     //para depués coger todos los usuarios que esten en esa seccion pasando el id de seccion cogido anteriomente
     private class GetUsers extends AsyncTask<Integer, Void, List<FichaPersonal>> {
-        int seccionId;
         @Override
         protected List<FichaPersonal> doInBackground(Integer... params) {
-            seccionId = params[0];
+            seccionID = params[0];
             SQLServerConnection sqlServerConnection = new SQLServerConnection(MainActivity.this);
             UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            return usuariosBD.getUsers(seccionId);
+            return usuariosBD.getUsers(seccionID);
         }
 
         @Override
@@ -101,12 +102,13 @@ String androidID;
                 // Si hay usuarios vamos a la página de usuarios pasándole desde aqui la lista de usuarios
                 Intent intent = new Intent(MainActivity.this, UsuariosActivity.class);
                 intent.putParcelableArrayListExtra("listaUsuarios", new ArrayList<>(fichas));
-                intent.putExtra("seccionId", seccionId);
+                intent.putExtra("seccionId", seccionID);
                 startActivity(intent);
             } else {
                 // Si no hay usuarios que salte directamente a la pagina de las mesas
                 Intent intent = new Intent(MainActivity.this, MesasActivity.class);
-                intent.putExtra("seccionId", seccionId);
+                System.out.println(seccionID);
+                intent.putExtra("seccionId", seccionID);
                 startActivity(intent);
             }
         }
