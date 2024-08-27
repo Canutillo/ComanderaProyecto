@@ -88,7 +88,7 @@ int seccionID;
         }
     }
 
-    // y poder seleccionar nuestros elementos del spinner para guardarles la mac del dispositivo
+    // y poder seleccionar nuestros elementos (dispositivos) del spinner para guardarles la mac del dispositivo
     private class UpdateMacTask extends AsyncTask<Object, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Object... params) {
