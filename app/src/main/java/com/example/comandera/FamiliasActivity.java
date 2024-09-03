@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +23,7 @@ import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.FamiliasBD;
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.TicketBD;
+import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.Familia;
 import com.example.comandera.utils.FichaPersonal;
@@ -57,8 +59,8 @@ public class FamiliasActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter("com.example.comandera.UPDATE_FAMILIAS"));
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
-        recyclerTicket = findViewById(R.id.recyclerTicket);
-        tvUser = findViewById(R.id.tvUser);
+        LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
+        recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);        tvUser = findViewById(R.id.tvUser);
 
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
@@ -97,29 +99,31 @@ public class FamiliasActivity extends AppCompatActivity {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
     }
-    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<String>> {
+
+    //apartir de aqui los task son para mostrar los articulos en el ticket
+    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<DetalleDocumento>> {
         @Override
-        protected List<String> doInBackground(Integer... params) {
+        protected List<DetalleDocumento> doInBackground(Integer... params) {
             int cabeceraId = params[0];
             TicketBD ticketBD = new TicketBD(FamiliasActivity.this);
             return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
         }
 
         @Override
-        protected void onPostExecute(List<String> descripcionesLargas) {
-            if (descripcionesLargas != null && !descripcionesLargas.isEmpty()) {
+        protected void onPostExecute(List<DetalleDocumento> detalles) {
+            if (detalles != null && !detalles.isEmpty()) {
                 if (ticketAdapter == null) {
-                    ticketAdapter = new TicketAdapter(FamiliasActivity.this, descripcionesLargas);
+                    ticketAdapter = new TicketAdapter(FamiliasActivity.this, detalles);
                     recyclerTicket.setAdapter(ticketAdapter);
                 } else {
-                    // Si el adaptador ya existe, actualizamos su lista
-                    ticketAdapter.updateData(descripcionesLargas);
+                    ticketAdapter.updateData(detalles);
                 }
             } else {
-                Toast.makeText(FamiliasActivity.this, "No se encontraron descripciones largas.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FamiliasActivity.this, "No se encontraron detalles del documento.", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
 
     private class GetDispositivoIdTask extends AsyncTask<String, Void, Integer> {
         @Override

@@ -55,7 +55,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewFamilias"
         android:layout_width="match_parent"
-        android:layout_height="360dp"
+        android:layout_height="240dp"
         android:layout_marginTop="9dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="6dp"
@@ -70,15 +70,15 @@
         android:id="@+id/recyclerTicket"
         layout="@layout/activity_ticket"
         android:layout_width="match_parent"
-        android:layout_height="340dp"
+        android:layout_height="420dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="6dp"
-        />
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"        />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="410dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"

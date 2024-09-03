@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +23,7 @@ import com.example.comandera.data.PreguntasBD;
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.Articulo;
+import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.PreguntaArticulo;
@@ -52,7 +54,9 @@ public class ArticulosActivity extends AppCompatActivity {
         tvUser = findViewById(R.id.tvUser);
         tvText = findViewById(R.id.tvText);
         recyclerViewArticulos = findViewById(R.id.recyclerViewArticulos);
-        recyclerTicket = findViewById(R.id.recyclerTicket);
+
+        LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
+        recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
 
         androidID = DeviceInfo.getAndroidID(this);
 
@@ -188,7 +192,7 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
-    //añadir un articulo al ticket, que en bbdd es añadri un fila a detalle_documentos_venta con el id de la cabecera
+    //añadir un articulo al ticket, que en bbdd es añadir una fila a detalle_documentos_venta con el id de la cabecera
     private class AddArticuloToTicketTask extends AsyncTask<Articulo, Void, Ticket> {
         @Override
         protected Ticket doInBackground(Articulo... params) {
@@ -199,7 +203,7 @@ public class ArticulosActivity extends AppCompatActivity {
                 throw new IllegalStateException("No existe un ticket para agregar artículos.");
             }
 
-            ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
+            ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), zonaId);
             return existingTicket;
         }
 
@@ -236,7 +240,7 @@ public class ArticulosActivity extends AppCompatActivity {
 
             if (existingTicket != null) {
                 // Agregar el artículo al ticket recién creado
-                ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
+                ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), zonaId);
             }
 
             return existingTicket;
@@ -291,26 +295,25 @@ public class ArticulosActivity extends AppCompatActivity {
 
 
     //apartir de aqui los task son para mostrar los articulos en el ticket
-    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<String>> {
+    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<DetalleDocumento>> {
         @Override
-        protected List<String> doInBackground(Integer... params) {
+        protected List<DetalleDocumento> doInBackground(Integer... params) {
             int cabeceraId = params[0];
             TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
             return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
         }
 
         @Override
-        protected void onPostExecute(List<String> descripcionesLargas) {
-            if (descripcionesLargas != null && !descripcionesLargas.isEmpty()) {
+        protected void onPostExecute(List<DetalleDocumento> detalles) {
+            if (detalles != null && !detalles.isEmpty()) {
                 if (ticketAdapter == null) {
-                    ticketAdapter = new TicketAdapter(ArticulosActivity.this, descripcionesLargas);
+                    ticketAdapter = new TicketAdapter(ArticulosActivity.this, detalles);
                     recyclerTicket.setAdapter(ticketAdapter);
                 } else {
-                    // Si el adaptador ya existe, actualizamos su lista
-                    ticketAdapter.updateData(descripcionesLargas);
+                    ticketAdapter.updateData(detalles);
                 }
             } else {
-                Toast.makeText(ArticulosActivity.this, "No se encontraron descripciones largas.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ArticulosActivity.this, "No se encontraron detalles del documento.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -329,7 +332,6 @@ public class ArticulosActivity extends AppCompatActivity {
         protected void onPostExecute(Integer result) {
             if (result != null) {
                 dispositivoId = result;
-
                 // Llamar al método para cargar y mostrar descripciones una vez que dispositivoId esté disponible
                 loadAndDisplayDescriptions();
             } else {
