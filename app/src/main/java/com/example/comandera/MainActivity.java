@@ -41,8 +41,15 @@ int seccionID;
 
         // Obtener el ANDROID_ID
         androidID = DeviceInfo.getAndroidID(this);
-
         new getMACS().execute();
+    }
+    //Arreglo para que si pulsas el boton de retroceso cierre la app
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        System.out.println("Adios");
+        finishAffinity();
+        System.exit(1);
     }
     //comprobar si la mac de nuestro dispositivio está en nuestra base de datos
     private class getMACS extends AsyncTask<Void, Void, Boolean> {

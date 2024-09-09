@@ -15,7 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.comandera.utils.FichaPersonal;
-
+//Esta es la prueba
 public class ComensalesActivity extends AppCompatActivity {
     TextView tvZona;
     EditText comensales;

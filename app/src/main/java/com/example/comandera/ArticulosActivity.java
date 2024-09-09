@@ -50,7 +50,7 @@ public class ArticulosActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_articulos);
-
+        System.out.println("Articulos");
         tvUser = findViewById(R.id.tvUser);
         tvText = findViewById(R.id.tvText);
         recyclerViewArticulos = findViewById(R.id.recyclerViewArticulos);

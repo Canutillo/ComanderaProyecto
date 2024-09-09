@@ -27,12 +27,13 @@ public class TicketBD {
         Ticket ticket = null;
         Connection connection = sqlServerConnection.connect();
         if (connection != null) {
-            String query = "SELECT id, estado_documento, fecha, numero, serie_id FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 AND dispositivo_id = ? AND tipo = 5 AND seccion_id = ?";
+            String query = "SELECT id, estado_documento, fecha, numero, serie_id FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 "+/*AND dispositivo_id = ?*/" AND tipo = 5 AND seccion_id = ?";
             try {
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setInt(1, mesaId);
-                statement.setInt(2, dispositivoId);
-                statement.setInt(3, seccionId);
+                //El dispositivo con el que se haya echo el ticket no importa
+                /*statement.setInt(2, dispositivoId);*/
+                statement.setInt(2, seccionId);
 
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {

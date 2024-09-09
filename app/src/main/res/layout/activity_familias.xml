@@ -64,7 +64,9 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false" />
 
     <include
         android:id="@+id/recyclerTicket"
@@ -74,7 +76,9 @@
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginLeft="6dp"
-        android:layout_marginRight="6dp"        />
+        android:layout_marginRight="6dp"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"

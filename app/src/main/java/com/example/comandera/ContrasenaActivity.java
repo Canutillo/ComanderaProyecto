@@ -65,6 +65,15 @@ public class ContrasenaActivity extends AppCompatActivity {
         });
     }
 
+    //Arreglo para que cuando intentes ir hacia atras vaya a usuarios empezando la app de nuevo
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();  // Si quieres cerrar la actividad actual
+    }
+
     private void verificarContrasena() {
         if (fichaPersonal != null) {
             String contrasenaIntroducida = contrasena.getText().toString().trim();

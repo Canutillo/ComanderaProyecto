@@ -42,7 +42,7 @@
             android:textSize="26sp" />
 
         <Button
-            android:id="@+id/salir"
+            android:id="@+id/botonCerrarSesion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -60,6 +60,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:scrollbars="horizontal"
+        android:fadeScrollbars="false"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -69,6 +71,8 @@
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false"
         app:layout_constraintTop_toBottomOf="@id/recyclerViewZonas" />
 
     <!-- Botón volver -->

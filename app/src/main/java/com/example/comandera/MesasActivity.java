@@ -1,8 +1,12 @@
 package com.example.comandera;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +25,7 @@ import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.MesasBD;
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.TicketBD;
+import com.example.comandera.data.UsuariosBD;
 import com.example.comandera.data.ZonasVentaBD;
 import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.FichaPersonal;
@@ -40,21 +45,50 @@ public class MesasActivity extends AppCompatActivity {
     ZonasAdapter zonasAdapter;
     MesasAdapter mesasAdapter;
     Ticket existingTicket;
+    private Button botonCerrarSesion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_mesas);
+        System.out.println("Mesas");
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+
         tvUser = findViewById(R.id.tvUser);
         recyclerViewZonas = findViewById(R.id.recyclerViewZonas);
         recyclerViewMesas = findViewById(R.id.recyclerViewMesas);
+
+        //Boton Cerrar Sesion
+        botonCerrarSesion=findViewById(R.id.botonCerrarSesion);
+        botonCerrarSesion.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MesasActivity.this);
+                builder.setMessage("¿Quiere cerrar sesion?")
+                        .setTitle("Cerrar Sesion");
+                // 3. Add buttons
+                builder.setPositiveButton("Cerrar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Cierra sesion en la tabla dispositivos_usuarios
+                        new CerrarSesionTask().execute();
+                    }
+                });
+                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Cancela y no pasa nada
+                    }
+                });
+                AlertDialog dialog = builder.create();
+
+                dialog.show();
+            }
+        });
 
         recyclerViewZonas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewMesas.setLayoutManager(new GridLayoutManager(this, 4));
@@ -71,6 +105,15 @@ public class MesasActivity extends AppCompatActivity {
         androidID = DeviceInfo.getAndroidID(this);
 
         new GetIdTask().execute(androidID);
+    }
+
+    //Arreglo para que cuando intentes ir hacia atras vaya a usuarios empezando la app de nuevo
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();  // Si quieres cerrar la actividad actual
     }
 
     private class GetIdTask extends AsyncTask<String, Void, Integer> {
@@ -90,6 +133,25 @@ public class MesasActivity extends AppCompatActivity {
         }
     }
 
+    private class CerrarSesionTask extends AsyncTask<Void,Void,Void>{
+
+        protected Void doInBackground(Void... voids) {
+            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
+            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
+            System.out.println(fichaPersonal.getId()+"____"+androidID);
+            usuariosBD.unsetActiveUser(fichaPersonal.getId(),androidID);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            Toast.makeText(getApplicationContext(), "Sesion Cerrada", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MesasActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
     private class GetZonas extends AsyncTask<Integer, Void, List<ZonaVenta>> {
         @Override
         protected List<ZonaVenta> doInBackground(Integer... params) {
@@ -101,6 +163,7 @@ public class MesasActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<ZonaVenta> zonasVenta) {
+            //Carga del recycler view de las zonas.
             if (!zonasVenta.isEmpty()) {
                 zonasAdapter = new ZonasAdapter(zonasVenta, new ZonasAdapter.OnItemClickListener() {
                     @Override
@@ -127,6 +190,7 @@ public class MesasActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<Mesa> mesas) {
+            //Carga del recycler view de las mesas y control de tickets existentes.
             if (!mesas.isEmpty() && mesas != null) {
                 mesasAdapter = new MesasAdapter(mesas, new MesasAdapter.OnItemClickListener() {
                     @Override

@@ -87,7 +87,9 @@
             android:inputType="number"
             android:singleLine="true"
             android:textAlignment="center"
-            android:textAllCaps="true" />
+            android:textAllCaps="true"
+            android:text="0"
+            android:focusableInTouchMode="true" />
 
         <Space
             android:layout_width="match_parent"

@@ -181,4 +181,69 @@ public class UsuariosBD {
         }
         return success;
     }
+
+
+    public void unsetActiveUser(int userId, String mac){
+        try {
+            Connection connection = sqlConnection.connect();
+            if (connection != null) {
+                String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
+                PreparedStatement getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                getDeviceIdStmt.setString(1, mac);
+                ResultSet deviceIdResultSet = getDeviceIdStmt.executeQuery();
+
+                int deviceId = -1;
+                if (deviceIdResultSet.next()) {
+                    deviceId = deviceIdResultSet.getInt("id");
+                }else{
+                    System.out.println("ID dispositivo no encontrado");
+                }
+
+                if (deviceId != -1) {
+                    String query = "DELETE FROM Dispositivos_Usuarios WHERE id_usuario = ? AND id_dispositivo = ?;";
+                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setInt(1, userId);
+                    preparedStatement.setInt(2, deviceId);
+                    // Ejecutar la actualización
+                    int rowsAffected = preparedStatement.executeUpdate();
+                    if (rowsAffected > 0) {
+                        // Actualización exitosa
+                        System.out.println("Sesion cerrada.");
+                    } else {
+                        // No se encontró ninguna fila para actualizar
+                        System.out.println("No habia sesion iniciada.");
+                    }
+
+                    preparedStatement.close();
+                    connection.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void quitarMac(String mac) {
+        try {
+            Connection connection = sqlConnection.connect();
+            if (connection != null) {
+                String query = "UPDATE Dispositivos SET mac = NULL WHERE mac = ?;";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, mac);
+                // Ejecutar la actualización
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    // Actualización exitosa
+                    System.out.println("Mac desvinculada correctamente.");
+                } else {
+                    // No se encontró ninguna fila para actualizar
+                    System.out.println("No se encontró ningún dispositivo con esa MAC.");
+                }
+                preparedStatement.close();
+                connection.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -55,7 +55,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/button2"
+            android:id="@+id/botonAjustes"
             android:layout_width="83dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"

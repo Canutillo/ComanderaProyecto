@@ -26,7 +26,8 @@
             android:exported="false" />
         <activity
             android:name=".ComensalesActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
             android:name=".MesasActivity"
             android:exported="false" />
