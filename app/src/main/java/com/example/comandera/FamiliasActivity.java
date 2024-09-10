@@ -61,7 +61,8 @@ public class FamiliasActivity extends AppCompatActivity {
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
-        recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);        tvUser = findViewById(R.id.tvUser);
+        recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
+        tvUser = findViewById(R.id.tvUser);
 
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));

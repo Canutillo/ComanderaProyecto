@@ -125,7 +125,11 @@ public class ArticulosActivity extends AppCompatActivity {
             if (preguntas != null && !preguntas.isEmpty()) {
                 showPreguntaDialog(preguntas, 0, new ArrayList<>());
             } else {
-                Toast.makeText(ArticulosActivity.this, "No se encontraron preguntas para este artículo", Toast.LENGTH_SHORT).show();
+                /*Toast.makeText(ArticulosActivity.this, "No se encontraron preguntas para este artículo", Toast.LENGTH_SHORT).show();*/
+
+                new LoadDescripcionesLargasTask().execute(existingTicket.getId());
+
+                updateFamiliasActivity();
             }
         }
     }
@@ -135,7 +139,7 @@ public class ArticulosActivity extends AppCompatActivity {
         new GetOpciones(preguntas, index, opcionesSeleccionadas).execute(pregunta);
     }
 
-    //coge las opciones que hay para cada pregunta y con el metodo de arriba las muestra
+    //coge las opciones que hay para cada pregunta y con el metodo de arriba las muestra AQUI ES DONDE
     private class GetOpciones extends AsyncTask<PreguntaArticulo, Void, List<String>> {
         private List<PreguntaArticulo> preguntas;
         private int index;
@@ -175,16 +179,23 @@ public class ArticulosActivity extends AppCompatActivity {
                             if (index < preguntas.size() - 1) {
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
                             } else {
-                                Toast.makeText(ArticulosActivity.this, "Respuestas guardadas", Toast.LENGTH_SHORT).show();
+                                /*Toast.makeText(ArticulosActivity.this, "Papapapapa", Toast.LENGTH_SHORT).show();*/
+                                new LoadDescripcionesLargasTask().execute(existingTicket.getId());
+                                updateFamiliasActivity();
+
                             }
-                        })
-                        .setNegativeButton("Anterior", (dialog, which) -> {
+                        });
+                if(index>0){
+                    builder.setNegativeButton("Anterior", (dialog, which) -> {
+                        dialog.dismiss();
+                        if (index > 0) {
+                            showPreguntaDialog(preguntas, index - 1, opcionesSeleccionadas);
+                        }else{
                             dialog.dismiss();
-                            if (index > 0) {
-                                showPreguntaDialog(preguntas, index - 1, opcionesSeleccionadas);
-                            }
-                        })
-                        .setNeutralButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                        }
+                    });
+                }
+                        builder.setCancelable(false)
                         .show();
             } else {
                 Toast.makeText(ArticulosActivity.this, "No se encontraron opciones para esta pregunta", Toast.LENGTH_SHORT).show();
@@ -211,9 +222,9 @@ public class ArticulosActivity extends AppCompatActivity {
         protected void onPostExecute(Ticket ticket) {
             existingTicket = ticket;
             //actualizar la interfaz del ticket cuando añado un articulo
-            new LoadDescripcionesLargasTask().execute(existingTicket.getId());
+            /*new LoadDescripcionesLargasTask().execute(existingTicket.getId());*/
             new GetPreguntas().execute(art.getId());
-            updateFamiliasActivity();
+            /*updateFamiliasActivity();*/
         }
     }
 
@@ -250,13 +261,15 @@ public class ArticulosActivity extends AppCompatActivity {
         protected void onPostExecute(Ticket ticket) {
             existingTicket = ticket;
 
-            if (existingTicket != null) {
+            /*if (existingTicket != null) {
                 // Actualizar la interfaz para mostrar el nuevo artículo en el ticket
                 new LoadDescripcionesLargasTask().execute(existingTicket.getId());
-            }
+                updateFamiliasActivity();
+            }*/
 
             // Cargar y mostrar preguntas asociadas al artículo
             new GetPreguntas().execute(articulo.getId());
+            /*updateFamiliasActivity();*/
         }
     }
 
