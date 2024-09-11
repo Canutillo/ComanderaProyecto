@@ -35,6 +35,8 @@ import com.example.comandera.utils.ZonaVenta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MesasActivity extends AppCompatActivity {
     FichaPersonal fichaPersonal;
@@ -171,7 +173,40 @@ public class MesasActivity extends AppCompatActivity {
                         ZonaVenta zv = zonasVenta.get(zonaId-1);
                         zonaVenta = zv.getZona();
 
-                        new GetMesas().execute(zonaId);
+                        new GetMesas().execute(zonaId);  //PRUEBA DEL EXECUTOR
+                        /*ExecutorService executor = Executors.newSingleThreadExecutor();
+
+                        executor.execute(() -> {
+                            // Tarea en segundo plano
+                            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
+                            MesasBD mesasBD = new MesasBD(sqlServerConnection);
+                            List <Mesa> mesas=mesasBD.getMesasByZonaId(zonaId);
+
+
+                            // Volver al hilo principal para actualizar la UI
+                            runOnUiThread(() -> {
+                                Toast.makeText(MesasActivity.this, "YA", Toast.LENGTH_SHORT).show();
+                                // Actualizar la UI aquí
+                                if (!mesas.isEmpty() && mesas != null) {
+                                    mesasAdapter = new MesasAdapter(mesas, new MesasAdapter.OnItemClickListener() {
+                                        @Override
+                                        public void onItemClick(String mesaNombre, int mesaId) {
+                                            nombreMesa = mesaNombre;
+                                            new CheckTicketTask(mesaId, dispositivoId, seccionId, 1, fichaPersonal.getId()).execute();
+                                        }
+                                    });
+                                    recyclerViewMesas.setAdapter(mesasAdapter);
+                                } else {
+                                    mesasAdapter = new MesasAdapter(new ArrayList<>(), null);
+                                    recyclerViewMesas.setAdapter(mesasAdapter);
+                                    Toast.makeText(MesasActivity.this, "No se encontraron mesas para esta zona", Toast.LENGTH_SHORT).show();
+                                }
+
+                            });
+                        });
+
+                        executor.shutdown();
+                        //Fin executor*/
                     }
                 });
                 recyclerViewZonas.setAdapter(zonasAdapter);
@@ -235,6 +270,7 @@ public class MesasActivity extends AppCompatActivity {
                 intent = new Intent(MesasActivity.this, FamiliasActivity.class);
             }else{
                 intent = new Intent(MesasActivity.this, ComensalesActivity.class);
+
             }
 
             intent.putExtra("mesaId", mesaId);

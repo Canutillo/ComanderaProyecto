@@ -1,5 +1,5 @@
 package com.example.comandera;
-
+//Copia de la aplicacion antes de empezar con la factorizacion de las variables globales (Funcional)
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;

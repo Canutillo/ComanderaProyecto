@@ -128,7 +128,6 @@ public class ArticulosActivity extends AppCompatActivity {
                 /*Toast.makeText(ArticulosActivity.this, "No se encontraron preguntas para este artículo", Toast.LENGTH_SHORT).show();*/
 
                 new LoadDescripcionesLargasTask().execute(existingTicket.getId());
-
                 updateFamiliasActivity();
             }
         }
@@ -178,6 +177,7 @@ public class ArticulosActivity extends AppCompatActivity {
                             dialog.dismiss();
                             if (index < preguntas.size() - 1) {
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
+                                //Toast.makeText(ArticulosActivity.this, opcionesSeleccionadas.toString(), Toast.LENGTH_SHORT).show();
                             } else {
                                 /*Toast.makeText(ArticulosActivity.this, "Papapapapa", Toast.LENGTH_SHORT).show();*/
                                 new LoadDescripcionesLargasTask().execute(existingTicket.getId());
@@ -213,8 +213,8 @@ public class ArticulosActivity extends AppCompatActivity {
             if (existingTicket == null) {
                 throw new IllegalStateException("No existe un ticket para agregar artículos.");
             }
-
             ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), zonaId);
+
             return existingTicket;
         }
 
