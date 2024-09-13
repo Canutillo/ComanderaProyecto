@@ -20,15 +20,13 @@ public class PreguntasBD {
     // Obtener preguntas ordenadas por la columna 'orden'
     public List<PreguntaArticulo> getPreguntas(int articuloId) {
         List<PreguntaArticulo> preguntasList = new ArrayList<>();
-        Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
         try {
-            connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String query = "SELECT id, texto FROM Preguntas_Articulo WHERE articulo_id = ? ORDER BY orden ASC";
-                statement = connection.prepareStatement(query);
+                statement = sqlConnection.getConexion().prepareStatement(query);
                 statement.setInt(1, articuloId);
                 resultSet = statement.executeQuery();
 
@@ -46,7 +44,6 @@ public class PreguntasBD {
             try {
                 if (resultSet != null) resultSet.close();
                 if (statement != null) statement.close();
-                if (connection != null) connection.close();
             } catch (SQLException | java.sql.SQLException e) {
                 e.printStackTrace();
             }
@@ -57,15 +54,13 @@ public class PreguntasBD {
     // Obtener opciones basadas en pregunta_articulo_id
     public List<String> getOpciones(int preguntaId) {
         List<String> opcionesList = new ArrayList<>();
-        Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
         try {
-            connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String query = "SELECT articulo FROM Articulos WHERE id IN (SELECT articulo_id FROM Opciones_Preguntas_Articulo WHERE pregunta_articulo_id = ?)";
-                statement = connection.prepareStatement(query);
+                statement = sqlConnection.getConexion().prepareStatement(query);
                 statement.setInt(1, preguntaId);
                 resultSet = statement.executeQuery();
 
@@ -82,7 +77,6 @@ public class PreguntasBD {
             try {
                 if (resultSet != null) resultSet.close();
                 if (statement != null) statement.close();
-                if (connection != null) connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             } catch (java.sql.SQLException e) {

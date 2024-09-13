@@ -1,9 +1,7 @@
 package com.example.comandera;
-//Copia de la aplicacion antes de empezar con la factorizacion de las variables globales (Funcional)
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -13,18 +11,17 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.comandera.data.DispositivosBD;
+import com.example.comandera.data.MesasBD;
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.UsuariosBD;
+import com.example.comandera.data.ZonasVentaBD;
 import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.FichaPersonal;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.comandera.utils.ZonaVenta;
 
 
 public class MainActivity extends AppCompatActivity {
-String androidID;
-int seccionID;
+private VariablesGlobales varGlob;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,117 +34,96 @@ int seccionID;
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        varGlob= (VariablesGlobales) getApplicationContext();
 
         // Obtener el ANDROID_ID
-        androidID = DeviceInfo.getAndroidID(this);
+        varGlob.setMacActual(DeviceInfo.getAndroidID(this));
         new getMACS().execute();
     }
+
     //Arreglo para que si pulsas el boton de retroceso cierre la app
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        System.out.println("Adios");
         finishAffinity();
         System.exit(1);
     }
-    //comprobar si la mac de nuestro dispositivio está en nuestra base de datos
+
+    //Comprobar si la mac de nuestro dispositivio está en nuestra base de datos
     private class getMACS extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... voids) {
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MainActivity.this);
-            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
-            return dispositivosBD.checkIfMacExists(androidID);
+            varGlob.setConexionSQL(new SQLServerConnection(MainActivity.this));
+            DispositivosBD dispositivosBD = new DispositivosBD(varGlob.getConexionSQL());
+            return dispositivosBD.checkIfMacExists(varGlob.getMacActual());
         }
         @Override
         protected void onPostExecute(Boolean exists) {
+            // Si la mac no esta en nuestra base de datos, tendremos que grabar la mac en la bbdd con la interfaz Config, si esta buscaremos los usuarios
             if (!exists) {
-                // Si la mac no esta en nuestra base de datos, tendremos que grabar la mac en la bbdd con la interfaz Config
                 Intent intent = new Intent(MainActivity.this, ConfigActivity.class);
                 startActivity(intent);
             } else {
-
-                new GetSeccionIdTask().execute(androidID);
+                new GetSeccionyDispositivoIdTask().execute();
             }
         }
     }
 
     // cojo el id de la seccion que tenga nuestro dispositivo
-    private class GetSeccionIdTask extends AsyncTask<String, Void, Integer> {
+    private class GetSeccionyDispositivoIdTask extends AsyncTask<String, Void, int[]> {
         @Override
-        protected Integer doInBackground(String... params) {
-            String mac = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MainActivity.this);
-            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
-            return dispositivosBD.getIdSeccion(mac);
+        protected int[] doInBackground(String... params) {
+            DispositivosBD dispositivosBD = new DispositivosBD(varGlob.getConexionSQL());
+            return dispositivosBD.getIdSeccionYDispositivo(varGlob.getMacActual());
         }
 
+
         @Override
-        protected void onPostExecute(Integer seccionId) {
-            seccionID = seccionId;
-            if (seccionId != null) {
-                new GetActiveUser(androidID).execute(seccionId);
+        protected void onPostExecute(int[] vector) {
+            varGlob.setIdDispositivoActual(vector[0]);
+            varGlob.setSeccionIdUsuariosActual(vector[1]);
+            if (varGlob.getSeccionIdUsuariosActual()>0) {
+                new GetActiveUserZonasMesas().execute();
             } else {
                 Toast.makeText(MainActivity.this, "No se encontró la sección", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    //para depués coger todos los usuarios que esten en esa seccion pasando el id de seccion cogido anteriomente
-    private class GetUsers extends AsyncTask<Integer, Void, List<FichaPersonal>> {
-        @Override
-        protected List<FichaPersonal> doInBackground(Integer... params) {
-            seccionID = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MainActivity.this);
-            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            return usuariosBD.getUsers(seccionID);
-        }
-
-        @Override
-        protected void onPostExecute(List<FichaPersonal> fichas) {
-            if (!fichas.isEmpty()) {
-                // Si hay usuarios vamos a la página de usuarios pasándole desde aqui la lista de usuarios
-                Intent intent = new Intent(MainActivity.this, UsuariosActivity.class);
-                intent.putParcelableArrayListExtra("listaUsuarios", new ArrayList<>(fichas));
-                intent.putExtra("seccionId", seccionID);
-                startActivity(intent);
-            } else {
-                // Si no hay usuarios que salte directamente a la pagina de las mesas
-                Intent intent = new Intent(MainActivity.this, MesasActivity.class);
-                System.out.println(seccionID);
-                intent.putExtra("seccionId", seccionID);
-                startActivity(intent);
-            }
-        }
-    }
-
-    // Obtener el usuario activo de la sección
-    private class GetActiveUser extends AsyncTask<Integer, Void, FichaPersonal> {
-        int seccionId;
-        int usuarioId;
-        String macAddress;
-        public GetActiveUser(String macAddress) {
-            this.macAddress = macAddress;
-        }
+    // Obtener el usuario activo de la sección (RECORDAR USUARIO) y cargar la lista de usuarios en las variables globales y las zonas con sus mesas
+    private class GetActiveUserZonasMesas extends AsyncTask<Integer, Void, FichaPersonal> {
         @Override
         protected FichaPersonal doInBackground(Integer... params) {
-            seccionId = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MainActivity.this);
-            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            return usuariosBD.getActiveUser(macAddress);
+            UsuariosBD usuariosBD = new UsuariosBD(varGlob.getConexionSQL());
+            ZonasVentaBD zonasVentaBD= new ZonasVentaBD(varGlob.getConexionSQL());
+            MesasBD mesasBD=new MesasBD(varGlob.getConexionSQL());
+            varGlob.setListaZonas(zonasVentaBD.getZonasBySeccionId(varGlob.getSeccionIdUsuariosActual()));
+            for (ZonaVenta item : varGlob.getListaZonas()) {
+                item.setListaMesas(mesasBD.getMesasByZonaId(item.getId()));
+            }
+            varGlob.setListaUsuarios(usuariosBD.getUsers(varGlob.getSeccionIdUsuariosActual()));
+            return usuariosBD.getActiveUser(varGlob.getMacActual());
         }
 
         @Override
         protected void onPostExecute(FichaPersonal activeUser) {
+
             if (activeUser != null) {
                 // Si hay un usuario activo, redirigir a la página de mesas con el usuario activo
                 Intent intent = new Intent(MainActivity.this, MesasActivity.class);
-                intent.putExtra("fichaPersonal", activeUser);
-                intent.putExtra("seccionId", seccionId);
+                varGlob.setUsuarioActual(activeUser);
                 startActivity(intent);
             } else {
-                // Si no hay un usuario activo, ejecutar otra acción (redirigir a UsuariosActivity)
-                new GetUsers().execute(seccionId);
+                // Si no hay un usuario activo, ejecutar otra acción (redirigir a UsuariosActivity o si no hay usuarios en esa seccion directamente a las mesas)
+                if (!varGlob.getListaUsuarios().isEmpty()) {
+                    Intent intent = new Intent(MainActivity.this, UsuariosActivity.class);
+                    startActivity(intent);
+                } else {
+                    // Si no hay usuarios que salte directamente a la pagina de las mesas
+                    Intent intent = new Intent(MainActivity.this, MesasActivity.class);
+                    System.out.println(varGlob.getSeccionIdUsuariosActual());
+                    startActivity(intent);
+                }
             }
         }
     }

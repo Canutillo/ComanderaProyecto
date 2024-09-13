@@ -19,8 +19,7 @@ public class ZonasVentaBD {
         List<ZonaVenta> zonas = new ArrayList<>();
         String query = "SELECT id, zona FROM zonas_ventas WHERE seccion_id = ?";
 
-        try (Connection connection = sqlConnection.connect();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query)) {
 
             preparedStatement.setInt(1, seccionId);
             ResultSet resultSet = preparedStatement.executeQuery();

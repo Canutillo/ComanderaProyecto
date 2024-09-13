@@ -19,7 +19,7 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(String mesaNombre, int id);
+        void onItemClick(int position);
     }
     public MesasAdapter(List<Mesa> mesas, OnItemClickListener listener) {
         this.mesas = mesas;
@@ -36,7 +36,7 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
     @Override
     public void onBindViewHolder(@NonNull MesaViewHolder holder, int position) {
         Mesa mesa = mesas.get(position);
-        holder.bind(mesa, listener);
+        holder.bind(mesa,position, listener);
     }
 
     @Override
@@ -52,12 +52,12 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
             textViewNombre = itemView.findViewById(R.id.textViewNombre);
         }
 
-        public void bind(Mesa mesa, final OnItemClickListener listener) {
+        public void bind(Mesa mesa,final int position, final OnItemClickListener listener) {
             textViewNombre.setText(mesa.getNombre());
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v){
-                    listener.onItemClick(mesa.getNombre(), mesa.getId());
+                    listener.onItemClick(position);
                 }
             });
         }

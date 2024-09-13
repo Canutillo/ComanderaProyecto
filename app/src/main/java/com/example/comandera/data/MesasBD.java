@@ -18,10 +18,9 @@ public class MesasBD {
     public List<Mesa> getMesasByZonaId(int zonaId) {
         List<Mesa> mesas = new ArrayList<>();
         try {
-            Connection connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String query = "SELECT id, zona_id, numero, nombre FROM Mesas WHERE zona_id = ?";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, zonaId);
                 ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -33,10 +32,8 @@ public class MesasBD {
                     Mesa mesa = new Mesa(id, numero, nombre, zona_id);
                     mesas.add(mesa);
                 }
-
                 resultSet.close();
                 preparedStatement.close();
-                connection.close();
             }
         } catch (Exception e) {
             e.printStackTrace();

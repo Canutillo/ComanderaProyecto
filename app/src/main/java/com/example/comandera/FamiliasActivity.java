@@ -37,6 +37,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import java.util.List;
 
 public class FamiliasActivity extends AppCompatActivity {
+    VariablesGlobales varGlob;
     RecyclerView recyclerViewFamilias, recyclerTicket;
     FichaPersonal fichaPersonal;
     TextView tvUser;
@@ -51,12 +52,13 @@ public class FamiliasActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_familias);
         System.out.println("Familias");
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        varGlob=(VariablesGlobales) getApplicationContext();
+
         LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter("com.example.comandera.UPDATE_FAMILIAS"));
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
@@ -74,7 +76,7 @@ public class FamiliasActivity extends AppCompatActivity {
         androidID = DeviceInfo.getAndroidID(this);
 
         if (fichaPersonal != null) {
-            tvUser.setText("Comandera/ " + fichaPersonal.getUsuarioApp());
+            tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp()+"/  "+varGlob.getMesaActual().getNombre());
         }
 
         zonaId = getIntent().getIntExtra("zonaId", -1);

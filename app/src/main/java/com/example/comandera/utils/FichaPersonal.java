@@ -15,6 +15,11 @@ public class FichaPersonal implements Parcelable {
     private boolean accesoTpv;
     private int estado;
 
+    @Override
+    public String toString(){
+        return this.usuarioApp;
+    }
+
     public FichaPersonal(int id, String usuarioApp, String contrasenaApp, int seccionId1, int seccionId2, int seccionId3, boolean accesoTpv, int estado) {
         this.id = id;
         this.usuarioApp = usuarioApp;

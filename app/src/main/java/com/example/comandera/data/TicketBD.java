@@ -25,11 +25,10 @@ public class TicketBD {
 
     public Ticket getTicketForMesa(int mesaId, int dispositivoId, int seccionId) {
         Ticket ticket = null;
-        Connection connection = sqlServerConnection.connect();
-        if (connection != null) {
+        if (sqlServerConnection.getConexion() != null) {
             String query = "SELECT id, estado_documento, fecha, numero, serie_id FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 "+/*AND dispositivo_id = ?*/" AND tipo = 5 AND seccion_id = ?";
             try {
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                 statement.setInt(1, mesaId);
                 //El dispositivo con el que se haya echo el ticket no importa
                 /*statement.setInt(2, dispositivoId);*/
@@ -49,11 +48,6 @@ public class TicketBD {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             }
         }
         return ticket;
@@ -61,13 +55,12 @@ public class TicketBD {
 
     public long addDetalleDocumentoVenta(long cabeceraId, int articuloId, int cantidad, String desc_articulo, String desc_larga, int zonaId) {
         long result = -1;
-        Connection connection = sqlServerConnection.connect();
 
-        if (connection != null) {
+        if (sqlServerConnection.getConexion() != null) {
             try {
                 // Obtener el tipo de IVA
                 String ivaQuery = "SELECT tipo_iva FROM tipos_iva WHERE id = (SELECT tipo_iva_id FROM articulos WHERE id=?)";
-                PreparedStatement ivaStatement = connection.prepareStatement(ivaQuery);
+                PreparedStatement ivaStatement = sqlServerConnection.getConexion().prepareStatement(ivaQuery);
                 ivaStatement.setInt(1, articuloId);
                 ResultSet ivaResultSet = ivaStatement.executeQuery();
                 double tipoIva = 0;
@@ -79,7 +72,7 @@ public class TicketBD {
 
                 // Obtener el precio neto del artículo
                 String precioQuery = "SELECT precio_venta FROM tarifa_venta WHERE articulo_id = ? AND tipo_tarifa_id = (SELECT id FROM tipos_tarifa_venta WHERE zona_id = ?)";
-                PreparedStatement precioStatement = connection.prepareStatement(precioQuery);
+                PreparedStatement precioStatement = sqlServerConnection.getConexion().prepareStatement(precioQuery);
                 precioStatement.setInt(1, articuloId);
                 precioStatement.setInt(2, zonaId);
                 ResultSet precioResultSet = precioStatement.executeQuery();
@@ -98,7 +91,7 @@ public class TicketBD {
 
                 // Verificar si el artículo ya existe en el ticket
                 String checkQuery = "SELECT Cantidad FROM Detalle_Documentos_Venta WHERE Cabecera_Id = ? AND Articulo_Id = ?";
-                PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+                PreparedStatement checkStatement = sqlServerConnection.getConexion().prepareStatement(checkQuery);
                 checkStatement.setLong(1, cabeceraId);
                 checkStatement.setInt(2, articuloId);
                 ResultSet resultSet = checkStatement.executeQuery();
@@ -109,7 +102,7 @@ public class TicketBD {
                     totalLinea = precioFinal * nuevaCantidad;
 
                     String updateQuery = "UPDATE Detalle_Documentos_Venta SET Cantidad = ?, precio = ?, total_linea = ? WHERE Cabecera_Id = ? AND Articulo_Id = ?";
-                    PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+                    PreparedStatement updateStatement = sqlServerConnection.getConexion().prepareStatement(updateQuery);
                     updateStatement.setInt(1, nuevaCantidad);
                     updateStatement.setDouble(2, precioFinal);
                     updateStatement.setDouble(3, totalLinea);
@@ -123,7 +116,7 @@ public class TicketBD {
                 } else {
                     // Si el artículo no existe, agregar una nueva línea con el precio, IVA y total_linea
                     String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea) VALUES (?,?,?,?,?,?,?,?)";
-                    PreparedStatement insertStatement = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+                    PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
                     insertStatement.setLong(1, cabeceraId);
                     insertStatement.setInt(2, articuloId);
                     insertStatement.setInt(3, cantidad);
@@ -149,11 +142,6 @@ public class TicketBD {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             }
         }
         return result;
@@ -162,13 +150,12 @@ public class TicketBD {
 
     public long createNewTicket(int idSerie, int idSeccion, int idDispositivo, int idMesa, int idUsuarioTpv, int comensales, int articuloId, int cantidad, String desc_articulo, String desc_larga) {
         long newRowId = -1;
-        Connection connection = sqlServerConnection.connect();
-        if (connection != null) {
+        if (sqlServerConnection.getConexion() != null) {
             try {
-                int numeroCorriente = incrementarNumero(connection);
+                int numeroCorriente = incrementarNumero();
 
                 String insertQuery = "INSERT INTO Cabecera_Documentos_Venta (Tipo, Fecha, Fecha_Contable, Serie_Id, Seccion_Id, Dispositivo_Id, Mesa_Id, Estado_Documento, Numero, Usuario_Ticket_Id, num_comensales) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-                PreparedStatement insertStatement = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+                PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
                 insertStatement.setInt(1, 5);
                 Timestamp currentTimestamp = new Timestamp(new Date().getTime());
                 insertStatement.setTimestamp(2, currentTimestamp);
@@ -196,19 +183,14 @@ public class TicketBD {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             }
         }
         return newRowId;
     }
 
-    public int incrementarNumero(Connection connection) throws SQLException {
+    public int incrementarNumero() throws SQLException {
         String getMaxNumeroQuery = "SELECT MAX(Numero) AS MaxNumero FROM Cabecera_Documentos_Venta";
-        PreparedStatement getMaxNumeroStatement = connection.prepareStatement(getMaxNumeroQuery);
+        PreparedStatement getMaxNumeroStatement = sqlServerConnection.getConexion().prepareStatement(getMaxNumeroQuery);
 
         ResultSet resultSet = getMaxNumeroStatement.executeQuery();
         double numeroCorriente = 1;
@@ -225,11 +207,10 @@ public class TicketBD {
 
     public List<DetalleDocumento> getDescripcionesLargasByCabeceraId(long cabeceraId) {
         List<DetalleDocumento> detalles = new ArrayList<>();
-        Connection connection = sqlServerConnection.connect();
-        if (connection != null) {
+        if (sqlServerConnection.getConexion() != null) {
             String query = "SELECT descripcion_larga, cantidad,  precio, total_linea  FROM Detalle_Documentos_Venta WHERE Cabecera_Id = ?";
             try {
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                 statement.setLong(1, cabeceraId);
 
                 ResultSet resultSet = statement.executeQuery();
@@ -247,11 +228,6 @@ public class TicketBD {
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
             }
         }
         return detalles;

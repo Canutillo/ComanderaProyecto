@@ -3,7 +3,6 @@ package com.example.comandera.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,7 +19,7 @@ public class ZonasAdapter extends RecyclerView.Adapter<ZonasAdapter.ZonaViewHold
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(int zonaId);
+        void onItemClick(int position);
     }
 
     public ZonasAdapter(List<ZonaVenta> zonas, OnItemClickListener listener) {
@@ -38,7 +37,7 @@ public class ZonasAdapter extends RecyclerView.Adapter<ZonasAdapter.ZonaViewHold
     @Override
     public void onBindViewHolder(@NonNull ZonaViewHolder holder, int position) {
         ZonaVenta zona = zonas.get(position);
-        holder.bind(zona, listener);
+        holder.bind(zona,position, listener);
     }
 
     @Override
@@ -54,12 +53,12 @@ public class ZonasAdapter extends RecyclerView.Adapter<ZonasAdapter.ZonaViewHold
             textViewZona = itemView.findViewById(R.id.textViewZona);
         }
 
-        public void bind(final ZonaVenta zonaVenta, final OnItemClickListener listener) {
+        public void bind(final ZonaVenta zonaVenta, final int position, final OnItemClickListener listener) {
             textViewZona.setText(zonaVenta.getZona());
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onItemClick(zonaVenta.getId());
+                    listener.onItemClick(position);
                 }
             });
         }

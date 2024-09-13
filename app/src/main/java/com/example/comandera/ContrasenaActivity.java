@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,18 +17,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.UsuariosBD;
-import com.example.comandera.utils.DeviceInfo;
-import com.example.comandera.utils.FichaPersonal;
 
 public class ContrasenaActivity extends AppCompatActivity {
-    private FichaPersonal fichaPersonal;
+    private VariablesGlobales varGlob;
+
     TextView nombreUser;
     EditText contrasena;
     CheckBox checkActivo;
-    int seccionId;
-    String androidID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,16 +35,14 @@ public class ContrasenaActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        varGlob=(VariablesGlobales) getApplicationContext();
 
         nombreUser = findViewById(R.id.nombreUser);
         contrasena = findViewById(R.id.editTextContrasena);
         checkActivo = findViewById(R.id.checkActivo);
 
-        seccionId = getIntent().getIntExtra("seccionId", -1);
-        androidID = DeviceInfo.getAndroidID(this);
-
-
         mostrarTeclado();
+        nombreUser.setText(varGlob.getUsuarioActual().getUsuarioApp());
 
         contrasena.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -69,24 +61,22 @@ public class ContrasenaActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, UsuariosActivity.class);
         startActivity(intent);
         finish();  // Si quieres cerrar la actividad actual
     }
 
     private void verificarContrasena() {
-        if (fichaPersonal != null) {
+        if (varGlob.getUsuarioActual() != null) {
             String contrasenaIntroducida = contrasena.getText().toString().trim();
-            String contrasenaAlmacenada = fichaPersonal.getContrasenaApp();
+            String contrasenaAlmacenada = varGlob.getUsuarioActual().getContrasenaApp();
 
             if (contrasenaIntroducida.equals(contrasenaAlmacenada)) {
                 // Contraseña correcta, si el checkbox esta seleccionado activa el usuario en la bbdd
                 if (checkActivo.isChecked()) {
-                    new SetActiveUserTask().execute(fichaPersonal.getId());
+                    new SetActiveUserTask().execute();
                 } else {
                     Intent i = new Intent(ContrasenaActivity.this, MesasActivity.class);
-                    i.putExtra("fichaPersonal", fichaPersonal);
-                    i.putExtra("seccionId", seccionId);
                     startActivity(i);
                 }
             } else {
@@ -100,10 +90,8 @@ public class ContrasenaActivity extends AppCompatActivity {
     private class SetActiveUserTask extends AsyncTask<Integer, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Integer... params) {
-            int userId = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(ContrasenaActivity.this);
-            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            return usuariosBD.setActiveUser(userId, androidID);
+            UsuariosBD usuariosBD = new UsuariosBD(varGlob.getConexionSQL());
+            return usuariosBD.setActiveUser(varGlob.getUsuarioActual().getId(), varGlob.getMacActual());
         }
 
         @Override
@@ -111,8 +99,6 @@ public class ContrasenaActivity extends AppCompatActivity {
             if (success) {
                 Toast.makeText(ContrasenaActivity.this, "Usuario activado correctamente", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(ContrasenaActivity.this, MesasActivity.class);
-                i.putExtra("fichaPersonal", fichaPersonal);
-                i.putExtra("seccionId", seccionId);
                 startActivity(i);
             } else {
                 Toast.makeText(ContrasenaActivity.this, "Error al activar el usuario", Toast.LENGTH_SHORT).show();
@@ -125,11 +111,5 @@ public class ContrasenaActivity extends AppCompatActivity {
         contrasena.requestFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.showSoftInput(contrasena, InputMethodManager.SHOW_IMPLICIT);
-
-        fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
-
-        if(fichaPersonal!= null){
-            nombreUser.setText(fichaPersonal.getUsuarioApp());
-        }
     }
 }

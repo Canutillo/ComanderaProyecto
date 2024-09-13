@@ -21,28 +21,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.comandera.adapters.MesasAdapter;
 import com.example.comandera.adapters.ZonasAdapter;
-import com.example.comandera.data.DispositivosBD;
-import com.example.comandera.data.MesasBD;
-import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.data.UsuariosBD;
-import com.example.comandera.data.ZonasVentaBD;
-import com.example.comandera.utils.DeviceInfo;
-import com.example.comandera.utils.FichaPersonal;
-import com.example.comandera.utils.Mesa;
 import com.example.comandera.utils.Ticket;
 import com.example.comandera.utils.ZonaVenta;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class MesasActivity extends AppCompatActivity {
-    FichaPersonal fichaPersonal;
+    VariablesGlobales varGlob;
     TextView tvUser;
-    int seccionId, zonaId, dispositivoId, mesaId;
-    String zonaVenta, nombreMesa, androidID;
     RecyclerView recyclerViewZonas, recyclerViewMesas;
     ZonasAdapter zonasAdapter;
     MesasAdapter mesasAdapter;
@@ -60,7 +48,7 @@ public class MesasActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        varGlob=(VariablesGlobales) getApplicationContext();
 
         tvUser = findViewById(R.id.tvUser);
         recyclerViewZonas = findViewById(R.id.recyclerViewZonas);
@@ -95,18 +83,35 @@ public class MesasActivity extends AppCompatActivity {
         recyclerViewZonas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewMesas.setLayoutManager(new GridLayoutManager(this, 4));
 
-        fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
-        seccionId = getIntent().getIntExtra("seccionId", -1);
-
-        if(fichaPersonal != null){
-            tvUser.setText("Comandera/ " +fichaPersonal.getUsuarioApp());
-            new GetZonas().execute(seccionId);
+        if(varGlob.getUsuarioActual() != null){
+            tvUser.setText("Comandera/ " +varGlob.getUsuarioActual().getUsuarioApp());
+            //Carga de las zonas en el adapter.
+            if (!varGlob.getListaZonas().isEmpty()) {
+                zonasAdapter = new ZonasAdapter(varGlob.getListaZonas(), new ZonasAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(int position) {
+                        ZonaVenta zv = varGlob.getListaZonas().get(position);
+                        varGlob.setZonaActual(zv);
+                        //Carga de las mesas en el adapter.
+                        if (!zv.getListaMesas().isEmpty() && zv.getListaMesas() != null) {
+                            mesasAdapter = new MesasAdapter(zv.getListaMesas(), new MesasAdapter.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(int position) {
+                                    varGlob.setMesaActual(zv.getListaMesas().get(position));
+                                    new CheckTicketTask(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual(), 1, varGlob.getUsuarioActual().getId()).execute();
+                                }
+                            });
+                            recyclerViewMesas.setAdapter(mesasAdapter);
+                        } else {
+                            mesasAdapter = new MesasAdapter(new ArrayList<>(), null);
+                            recyclerViewMesas.setAdapter(mesasAdapter);
+                            Toast.makeText(MesasActivity.this, "No se encontraron mesas para esta zona", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                recyclerViewZonas.setAdapter(zonasAdapter);
+            }
         }
-
-        // Obtener el ANDROID_ID
-        androidID = DeviceInfo.getAndroidID(this);
-
-        new GetIdTask().execute(androidID);
     }
 
     //Arreglo para que cuando intentes ir hacia atras vaya a usuarios empezando la app de nuevo
@@ -118,30 +123,12 @@ public class MesasActivity extends AppCompatActivity {
         finish();  // Si quieres cerrar la actividad actual
     }
 
-    private class GetIdTask extends AsyncTask<String, Void, Integer> {
-        @Override
-        protected Integer doInBackground(String... params) {
-            String mac = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
-            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
-            return dispositivosBD.getId(mac);
-        }
-
-        @Override
-        protected void onPostExecute(Integer id) {
-            if (id != null) {
-                dispositivoId = id;
-            }
-        }
-    }
-
     private class CerrarSesionTask extends AsyncTask<Void,Void,Void>{
 
         protected Void doInBackground(Void... voids) {
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
-            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            System.out.println(fichaPersonal.getId()+"____"+androidID);
-            usuariosBD.unsetActiveUser(fichaPersonal.getId(),androidID);
+            UsuariosBD usuariosBD = new UsuariosBD(varGlob.getConexionSQL());
+            System.out.println(varGlob.getUsuarioActual().getId()+"____"+varGlob.getMacActual());
+            usuariosBD.unsetActiveUser(varGlob.getUsuarioActual().getId(),varGlob.getMacActual());
             return null;
         }
 
@@ -151,95 +138,6 @@ public class MesasActivity extends AppCompatActivity {
             Intent intent = new Intent(MesasActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
-        }
-    }
-
-    private class GetZonas extends AsyncTask<Integer, Void, List<ZonaVenta>> {
-        @Override
-        protected List<ZonaVenta> doInBackground(Integer... params) {
-            seccionId = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
-            ZonasVentaBD zonasBD = new ZonasVentaBD(sqlServerConnection);
-            return zonasBD.getZonasBySeccionId(seccionId);
-        }
-
-        @Override
-        protected void onPostExecute(List<ZonaVenta> zonasVenta) {
-            //Carga del recycler view de las zonas.
-            if (!zonasVenta.isEmpty()) {
-                zonasAdapter = new ZonasAdapter(zonasVenta, new ZonasAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(int zonaId) {
-                        ZonaVenta zv = zonasVenta.get(zonaId-1);
-                        zonaVenta = zv.getZona();
-
-                        new GetMesas().execute(zonaId);  //PRUEBA DEL EXECUTOR
-                        /*ExecutorService executor = Executors.newSingleThreadExecutor();
-
-                        executor.execute(() -> {
-                            // Tarea en segundo plano
-                            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
-                            MesasBD mesasBD = new MesasBD(sqlServerConnection);
-                            List <Mesa> mesas=mesasBD.getMesasByZonaId(zonaId);
-
-
-                            // Volver al hilo principal para actualizar la UI
-                            runOnUiThread(() -> {
-                                Toast.makeText(MesasActivity.this, "YA", Toast.LENGTH_SHORT).show();
-                                // Actualizar la UI aquí
-                                if (!mesas.isEmpty() && mesas != null) {
-                                    mesasAdapter = new MesasAdapter(mesas, new MesasAdapter.OnItemClickListener() {
-                                        @Override
-                                        public void onItemClick(String mesaNombre, int mesaId) {
-                                            nombreMesa = mesaNombre;
-                                            new CheckTicketTask(mesaId, dispositivoId, seccionId, 1, fichaPersonal.getId()).execute();
-                                        }
-                                    });
-                                    recyclerViewMesas.setAdapter(mesasAdapter);
-                                } else {
-                                    mesasAdapter = new MesasAdapter(new ArrayList<>(), null);
-                                    recyclerViewMesas.setAdapter(mesasAdapter);
-                                    Toast.makeText(MesasActivity.this, "No se encontraron mesas para esta zona", Toast.LENGTH_SHORT).show();
-                                }
-
-                            });
-                        });
-
-                        executor.shutdown();
-                        //Fin executor*/
-                    }
-                });
-                recyclerViewZonas.setAdapter(zonasAdapter);
-            }
-        }
-    }
-
-    private class GetMesas extends AsyncTask<Integer, Void, List<Mesa>> {
-        @Override
-        protected List<Mesa> doInBackground(Integer... params) {
-            zonaId = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(MesasActivity.this);
-            MesasBD mesasBD = new MesasBD(sqlServerConnection);
-            return mesasBD.getMesasByZonaId(zonaId);
-        }
-
-        @Override
-        protected void onPostExecute(List<Mesa> mesas) {
-            //Carga del recycler view de las mesas y control de tickets existentes.
-            if (!mesas.isEmpty() && mesas != null) {
-                mesasAdapter = new MesasAdapter(mesas, new MesasAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(String mesaNombre, int mesaId) {
-                        nombreMesa = mesaNombre;
-                        new CheckTicketTask(mesaId, dispositivoId, seccionId, 1, fichaPersonal.getId()).execute();
-                    }
-                });
-                recyclerViewMesas.setAdapter(mesasAdapter);
-            } else {
-                mesasAdapter = new MesasAdapter(new ArrayList<>(), null);
-                recyclerViewMesas.setAdapter(mesasAdapter);
-                Toast.makeText(MesasActivity.this, "No se encontraron mesas para esta zona", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 
@@ -274,11 +172,11 @@ public class MesasActivity extends AppCompatActivity {
             }
 
             intent.putExtra("mesaId", mesaId);
-            intent.putExtra("zonaVenta", zonaVenta);
-            intent.putExtra("mesaNombre", nombreMesa);
-            intent.putExtra("zonaId", zonaId);
+            intent.putExtra("zonaVenta", varGlob.getZonaActual().getZona());
+            intent.putExtra("mesaNombre", varGlob.getMesaActual().getNombre());
+            intent.putExtra("zonaId", varGlob.getZonaActual().getId());
             intent.putExtra("seccionId", seccionId);
-            intent.putExtra("fichaPersonal", fichaPersonal);
+            intent.putExtra("fichaPersonal", varGlob.getUsuarioActual());
             intent.putExtra("dispositivoId", dispositivoId);
             startActivity(intent);
         }

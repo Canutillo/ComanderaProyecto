@@ -20,19 +20,15 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.comandera.adapters.FichaPersonalAdapter;
-import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.UsuariosBD;
-import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.FichaPersonal;
 
-import java.util.List;
 
 public class UsuariosActivity extends AppCompatActivity implements FichaPersonalAdapter.OnItemClickListener {
 
+    private VariablesGlobales varGlob;
     private RecyclerView recyclerViewUsuarios;
     private FichaPersonalAdapter adapter;
-    private List<FichaPersonal> listaUsuarios;
-    int seccionId;
     private Button botonAjustes;
 
     @Override
@@ -46,6 +42,8 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        varGlob=(VariablesGlobales) getApplicationContext();
+
 
         //Boton para desvincular dispositivo
         botonAjustes=findViewById(R.id.botonAjustes);
@@ -75,12 +73,10 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
         recyclerViewUsuarios = findViewById(R.id.recyclerViewUsuarios);
 
         // Recibir la lista de usuarios
-        listaUsuarios = getIntent().getParcelableArrayListExtra("listaUsuarios");
-        seccionId = getIntent().getIntExtra("seccionId", -1);
 
-        if (listaUsuarios != null && !listaUsuarios.isEmpty()) {
+        if (varGlob.getListaUsuarios() != null && !varGlob.getListaUsuarios().isEmpty()) {
             // Configurar RecyclerView
-            adapter = new FichaPersonalAdapter(listaUsuarios, this);
+            adapter = new FichaPersonalAdapter(varGlob.getListaUsuarios(), this);
             GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
             recyclerViewUsuarios.setLayoutManager(gridLayoutManager);
             recyclerViewUsuarios.setAdapter(adapter);
@@ -88,9 +84,6 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
             Toast.makeText(this, "No se recibieron usuarios", Toast.LENGTH_SHORT).show();
         }
     }
-
-
-
 
     //Arreglo para que cuando intentes ir hacia atras reinicie la app
     @Override
@@ -107,16 +100,14 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
     }
 
     private class CheckUserPasswordTask extends AsyncTask<Void, Void, Boolean> {
-        private final FichaPersonal fichaPersonal;
 
         public CheckUserPasswordTask(FichaPersonal fichaPersonal) {
-            this.fichaPersonal = fichaPersonal;
+            varGlob.setUsuarioActual(fichaPersonal);
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(UsuariosActivity.this);
-            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
+            UsuariosBD usuariosBD = new UsuariosBD(varGlob.getConexionSQL());
             return usuariosBD.existsContrasena();
         }
 
@@ -129,31 +120,24 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
             } else {
                 intent = new Intent(UsuariosActivity.this, MesasActivity.class);
             }
-            intent.putExtra("fichaPersonal", fichaPersonal);
-            intent.putExtra("seccionId", seccionId);
-            System.out.println("AQUI"+seccionId);
+            System.out.println("AQUI"+varGlob.getSeccionIdUsuariosActual());
             startActivity(intent);
             finish();
         }
     }
 
     private class DesvincularMac extends AsyncTask<Void,Void,Void>{
-        private String mac;
 
-        public DesvincularMac() {
-            this.mac = DeviceInfo.getAndroidID(UsuariosActivity.this);
-        }
+        @Override
         protected Void doInBackground(Void... voids) {
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(UsuariosActivity.this);
-            UsuariosBD usuariosBD = new UsuariosBD(sqlServerConnection);
-            usuariosBD.quitarMac(mac);
+            UsuariosBD usuariosBD = new UsuariosBD(varGlob.getConexionSQL());
+            usuariosBD.quitarMac(varGlob.getMacActual());
             return null;
         }
-
         @Override
         protected void onPostExecute(Void result) {
             Toast.makeText(getApplicationContext(), "Dispositivo desvinculado", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(UsuariosActivity.this, MainActivity.class);
+            Intent intent = new Intent(UsuariosActivity.this, ConfigActivity.class);
             startActivity(intent);
             finish();
         }

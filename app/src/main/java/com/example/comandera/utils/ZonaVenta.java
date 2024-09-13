@@ -1,9 +1,12 @@
 package com.example.comandera.utils;
 
+import java.util.List;
+
 public class ZonaVenta {
 
     private int id;
     private String zona;
+    private List<Mesa> listaMesas;
 
     public ZonaVenta(int id, String zona) {
         this.id = id;
@@ -18,8 +21,18 @@ public class ZonaVenta {
         return zona;
     }
 
+    public List<Mesa> getListaMesas() {
+        return listaMesas;
+    }
+
+
+
+    public void setListaMesas(List<Mesa> listaMesas) {
+        this.listaMesas = listaMesas;
+    }
+
     @Override
     public String toString() {
-        return "Zona{id=" + id + ", zona='" + zona + "'}";
+        return this.getId()+""/*"Zona{id=" + id + ", zona='" + zona + "'}"*/;
     }
 }

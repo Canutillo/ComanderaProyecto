@@ -19,11 +19,10 @@ public class UsuariosBD {
     public List<FichaPersonal> getUsers(int seccionId) {
         List<FichaPersonal> fichas = new ArrayList<>();
         try {
-            Connection connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String query = "SELECT id, usuario_app, contrasena_app, seccion_id_1, seccion_id_2, seccion_id_3, acceso_tpv, estado " +
                         "FROM Ficha_Personal WHERE estado = 0 AND acceso_tpv = 'true' AND (seccion_id_1 = ? OR seccion_id_2 = ? OR seccion_id_3 = ?)";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, seccionId);
                 preparedStatement.setInt(2, seccionId);
                 preparedStatement.setInt(3, seccionId);
@@ -44,7 +43,6 @@ public class UsuariosBD {
 
                 resultSet.close();
                 preparedStatement.close();
-                connection.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,10 +53,9 @@ public class UsuariosBD {
     public boolean existsContrasena() {
         boolean exists = false;
         try {
-            Connection connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String query = "SELECT TOP 1 1 FROM Ficha_Personal WHERE contrasena_app IS NOT NULL AND acceso_tpv = 1 AND estado = 0";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                 ResultSet resultSet = preparedStatement.executeQuery();
 
                 if (resultSet.next()) {
@@ -67,7 +64,6 @@ public class UsuariosBD {
 
                 resultSet.close();
                 preparedStatement.close();
-                connection.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,7 +74,6 @@ public class UsuariosBD {
     public FichaPersonal getActiveUser(String macAddress) {
         FichaPersonal activeUser = null;
         int usuarioId = -1;
-        Connection connection = null;
         PreparedStatement getDeviceIdStmt = null;
         ResultSet deviceIdResultSet = null;
         PreparedStatement macCheckStmt = null;
@@ -87,10 +82,9 @@ public class UsuariosBD {
         ResultSet userResult = null;
 
         try {
-            connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
-                getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                getDeviceIdStmt = sqlConnection.getConexion().prepareStatement(getDeviceIdQuery);
                 getDeviceIdStmt.setString(1, macAddress);
                 deviceIdResultSet = getDeviceIdStmt.executeQuery();
 
@@ -102,7 +96,7 @@ public class UsuariosBD {
                 if (deviceId != -1) {
                     // Verificar si la MAC tiene un usuario asociado
                     String macCheckQuery = "SELECT id_usuario FROM Dispositivos_usuarios WHERE id_dispositivo = ?";
-                    macCheckStmt = connection.prepareStatement(macCheckQuery);
+                    macCheckStmt = sqlConnection.getConexion().prepareStatement(macCheckQuery);
                     macCheckStmt.setInt(1, deviceId);
                     macCheckResult = macCheckStmt.executeQuery();
 
@@ -111,7 +105,7 @@ public class UsuariosBD {
                         usuarioId = macCheckResult.getInt("id_usuario");
                         String userQuery = "SELECT id, usuario_app, contrasena_app, seccion_id_1, seccion_id_2, seccion_id_3, acceso_tpv, estado " +
                                 "FROM Ficha_Personal WHERE id = ? AND estado = 0 AND acceso_tpv = 1";
-                        userStmt = connection.prepareStatement(userQuery);
+                        userStmt = sqlConnection.getConexion().prepareStatement(userQuery);
                         userStmt.setInt(1, usuarioId);
                         userResult = userStmt.executeQuery();
 
@@ -139,7 +133,6 @@ public class UsuariosBD {
                 if (macCheckStmt != null) macCheckStmt.close();
                 if (deviceIdResultSet != null) deviceIdResultSet.close();
                 if (getDeviceIdStmt != null) getDeviceIdStmt.close();
-                if (connection != null) connection.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -151,10 +144,9 @@ public class UsuariosBD {
     public boolean setActiveUser(int userId, String macAddress) {
         boolean success = false;
         try {
-            Connection connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
-                PreparedStatement getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                PreparedStatement getDeviceIdStmt = sqlConnection.getConexion().prepareStatement(getDeviceIdQuery);
                 getDeviceIdStmt.setString(1, macAddress);
                 ResultSet deviceIdResultSet = getDeviceIdStmt.executeQuery();
 
@@ -165,7 +157,7 @@ public class UsuariosBD {
 
                 if (deviceId != -1) {
                     String query = "INSERT INTO Dispositivos_usuarios (id_dispositivo, id_usuario) VALUES (?, ?)";
-                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                     preparedStatement.setInt(1, deviceId);
                     preparedStatement.setInt(2, userId);
 
@@ -173,7 +165,6 @@ public class UsuariosBD {
                     success = rowsAffected > 0;
 
                     preparedStatement.close();
-                    connection.close();
                 }
             }
         } catch (Exception e) {
@@ -185,10 +176,9 @@ public class UsuariosBD {
 
     public void unsetActiveUser(int userId, String mac){
         try {
-            Connection connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String getDeviceIdQuery = "SELECT id FROM dispositivos WHERE mac = ?";
-                PreparedStatement getDeviceIdStmt = connection.prepareStatement(getDeviceIdQuery);
+                PreparedStatement getDeviceIdStmt = sqlConnection.getConexion().prepareStatement(getDeviceIdQuery);
                 getDeviceIdStmt.setString(1, mac);
                 ResultSet deviceIdResultSet = getDeviceIdStmt.executeQuery();
 
@@ -201,7 +191,7 @@ public class UsuariosBD {
 
                 if (deviceId != -1) {
                     String query = "DELETE FROM Dispositivos_Usuarios WHERE id_usuario = ? AND id_dispositivo = ?;";
-                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                     preparedStatement.setInt(1, userId);
                     preparedStatement.setInt(2, deviceId);
                     // Ejecutar la actualización
@@ -215,7 +205,6 @@ public class UsuariosBD {
                     }
 
                     preparedStatement.close();
-                    connection.close();
                 }
             }
         } catch (Exception e) {
@@ -225,10 +214,9 @@ public class UsuariosBD {
 
     public void quitarMac(String mac) {
         try {
-            Connection connection = sqlConnection.connect();
-            if (connection != null) {
+            if (sqlConnection.getConexion() != null) {
                 String query = "UPDATE Dispositivos SET mac = NULL WHERE mac = ?;";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                 preparedStatement.setString(1, mac);
                 // Ejecutar la actualización
                 int rowsAffected = preparedStatement.executeUpdate();
@@ -240,7 +228,6 @@ public class UsuariosBD {
                     System.out.println("No se encontró ningún dispositivo con esa MAC.");
                 }
                 preparedStatement.close();
-                connection.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
