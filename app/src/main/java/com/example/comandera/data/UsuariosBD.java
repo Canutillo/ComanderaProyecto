@@ -16,6 +16,7 @@ public class UsuariosBD {
     public UsuariosBD(SQLServerConnection sqlConnection) {
         this.sqlConnection = sqlConnection;
     }
+
     public List<FichaPersonal> getUsers(int seccionId) {
         List<FichaPersonal> fichas = new ArrayList<>();
         try {

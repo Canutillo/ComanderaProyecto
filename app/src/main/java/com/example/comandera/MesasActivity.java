@@ -34,7 +34,6 @@ public class MesasActivity extends AppCompatActivity {
     RecyclerView recyclerViewZonas, recyclerViewMesas;
     ZonasAdapter zonasAdapter;
     MesasAdapter mesasAdapter;
-    Ticket existingTicket;
     private Button botonCerrarSesion;
 
     @Override
@@ -83,6 +82,7 @@ public class MesasActivity extends AppCompatActivity {
         recyclerViewZonas.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewMesas.setLayoutManager(new GridLayoutManager(this, 4));
 
+        //Click en las mesas
         if(varGlob.getUsuarioActual() != null){
             tvUser.setText("Comandera/ " +varGlob.getUsuarioActual().getUsuarioApp());
             //Carga de las zonas en el adapter.
@@ -98,7 +98,7 @@ public class MesasActivity extends AppCompatActivity {
                                 @Override
                                 public void onItemClick(int position) {
                                     varGlob.setMesaActual(zv.getListaMesas().get(position));
-                                    new CheckTicketTask(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual(), 1, varGlob.getUsuarioActual().getId()).execute();
+                                    new CheckTicketTask(1).execute();
                                 }
                             });
                             recyclerViewMesas.setAdapter(mesasAdapter);
@@ -142,43 +142,75 @@ public class MesasActivity extends AppCompatActivity {
     }
 
     private class CheckTicketTask extends AsyncTask<Void, Void, Ticket> {
-        int mesaId, dispositivoId, seccionId, idSerie, idUsuarioTpv;
+        int idSerie;
 
-        public CheckTicketTask(int mesaId, int dispositivoId, int seccionId, int idSerie, int idUsuarioTpv) {
-            this.mesaId = mesaId;
-            this.dispositivoId = dispositivoId;
-            this.seccionId = seccionId;
+        public CheckTicketTask(int idSerie) {
             this.idSerie = idSerie;
-            this.idUsuarioTpv = idUsuarioTpv;
         }
 
         @Override
         protected Ticket doInBackground(Void... voids) {
-            TicketBD ticketBD = new TicketBD(MesasActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
             // Verificar si ya existe un ticket para la mesa seleccionada
-            Ticket existingTicket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
+            Ticket existingTicket = ticketBD.getTicketForMesa(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
             return existingTicket;
         }
 
         @Override
         protected void onPostExecute(Ticket ticket) {
-            Intent intent, i;
-            existingTicket = ticket;
+            varGlob.setTicketActual(ticket);
             if (ticket != null) {
-                intent = new Intent(MesasActivity.this, FamiliasActivity.class);
+                new CargarDetallesTask().execute();
             }else{
+                Intent intent;
                 intent = new Intent(MesasActivity.this, ComensalesActivity.class);
+                ticket= new Ticket();
+                ticket.setNuevo(true);
+                varGlob.setTicketActual(ticket);
 
+                intent.putExtra("mesaId", varGlob.getMesaActual().getId());
+                intent.putExtra("zonaVenta", varGlob.getZonaActual().getZona());
+                intent.putExtra("mesaNombre", varGlob.getMesaActual().getNombre());
+                intent.putExtra("zonaId", varGlob.getZonaActual().getId());
+                intent.putExtra("seccionId", varGlob.getSeccionIdUsuariosActual());
+                intent.putExtra("fichaPersonal", varGlob.getUsuarioActual());
+                intent.putExtra("dispositivoId", varGlob.getIdDispositivoActual());
+                startActivity(intent);
             }
+        }
+    }
 
-            intent.putExtra("mesaId", mesaId);
+    //AsyncTask para cargar los detalles en el ticket
+
+    private class CargarDetallesTask extends AsyncTask<Void, Void, Ticket> {
+
+        @Override
+        protected Ticket doInBackground(Void... voids) {
+            Ticket ticket=varGlob.getTicketActual();
+            TicketBD ticketBD=new TicketBD(varGlob.getConexionSQL());
+            ticketBD.cargarDetallesEnTicket(ticket,MesasActivity.this);
+            return ticket;
+        }
+
+        @Override
+        protected void onPostExecute(Ticket ticket) {
+            Intent intent =new Intent(MesasActivity.this,FamiliasActivity.class);
+            varGlob.setTicketActual(ticket);
+
+            //Borrar
+            intent.putExtra("mesaId", varGlob.getMesaActual().getId());
             intent.putExtra("zonaVenta", varGlob.getZonaActual().getZona());
             intent.putExtra("mesaNombre", varGlob.getMesaActual().getNombre());
             intent.putExtra("zonaId", varGlob.getZonaActual().getId());
-            intent.putExtra("seccionId", seccionId);
+            intent.putExtra("seccionId", varGlob.getSeccionIdUsuariosActual());
             intent.putExtra("fichaPersonal", varGlob.getUsuarioActual());
-            intent.putExtra("dispositivoId", dispositivoId);
+            intent.putExtra("dispositivoId", varGlob.getIdDispositivoActual());
+            //Borrar hasta aqui
+
             startActivity(intent);
         }
     }
+
+
+
 }

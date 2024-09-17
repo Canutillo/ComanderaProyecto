@@ -4,6 +4,7 @@ import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.Ticket;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,14 +20,15 @@ import java.util.Locale;
 public class TicketBD {
     private SQLServerConnection sqlServerConnection;
 
-    public TicketBD(Context context) {
-        sqlServerConnection = new SQLServerConnection(context);
+    public TicketBD(SQLServerConnection connection) {
+
+        sqlServerConnection = connection;
     }
 
     public Ticket getTicketForMesa(int mesaId, int dispositivoId, int seccionId) {
         Ticket ticket = null;
         if (sqlServerConnection.getConexion() != null) {
-            String query = "SELECT id, estado_documento, fecha, numero, serie_id FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 "+/*AND dispositivo_id = ?*/" AND tipo = 5 AND seccion_id = ?";
+            String query = "SELECT id, estado_documento, fecha, numero, serie_id, num_comensales FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 "+/*AND dispositivo_id = ?*/" AND tipo = 5 AND seccion_id = ?";
             try {
                 PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                 statement.setInt(1, mesaId);
@@ -42,6 +44,7 @@ public class TicketBD {
                     ticket.setFecha(resultSet.getString("fecha"));
                     ticket.setNumero(resultSet.getDouble("numero"));
                     ticket.setSerieId(resultSet.getDouble("serie_id"));
+                    ticket.setComensales(resultSet.getInt("num_comensales"));
                 }
                 resultSet.close();
                 statement.close();
@@ -51,6 +54,38 @@ public class TicketBD {
             }
         }
         return ticket;
+    }
+
+    public void cargarDetallesEnTicket(Ticket ticket,Context context){
+        if (ticket!=null){
+            if (sqlServerConnection.getConexion() != null) {
+                String query = "SELECT articulo_id, descripcion, descripcion_larga, cantidad, total_linea, precio FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
+                try {
+                    PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
+                    statement.setInt(1, ticket.getId());
+                    ResultSet resultSet = statement.executeQuery();
+                    while (resultSet.next()) {
+
+                        //AÑADIENDO INFORMACION A LOS DETALLES
+                        DetalleDocumento detalle = new DetalleDocumento();
+                        detalle.setArticuloID(resultSet.getInt("articulo_id"));
+                        detalle.setDescripcion((resultSet.getString("descripcion")));
+                        detalle.setDescripcionLarga(resultSet.getString("descripcion_larga"));
+                        detalle.setCantidad(resultSet.getInt("cantidad"));
+                        detalle.setTotalLinea(resultSet.getBigDecimal("total_linea").doubleValue());
+                        detalle.setPvp(resultSet.getBigDecimal("precio").doubleValue());
+                        ticket.getDetallesTicket().add(detalle);
+                    }
+                    resultSet.close();
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                }
+            }
+        }else{
+            Toast.makeText(context,"No se encontraron detalles en este ticket",Toast.LENGTH_SHORT).show();
+        }
     }
 
     public long addDetalleDocumentoVenta(long cabeceraId, int articuloId, int cantidad, String desc_articulo, String desc_larga, int zonaId) {

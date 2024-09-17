@@ -15,12 +15,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.comandera.utils.FichaPersonal;
+import com.example.comandera.utils.Ticket;
+
 public class ComensalesActivity extends AppCompatActivity {
+    VariablesGlobales varGlob;
     TextView tvZona;
     EditText comensales;
-    int mesaId, seccionId;
     TextView tvUser;
-    FichaPersonal fichaPersonal;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,34 +32,35 @@ public class ComensalesActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        varGlob=(VariablesGlobales) getApplicationContext();
 
         tvZona = findViewById(R.id.zona);
         tvUser = findViewById(R.id.tvUser);
         comensales = findViewById(R.id.editTextComensales);
-        fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
-        mesaId = getIntent().getIntExtra("mesaId", -1);
-        seccionId = getIntent().getIntExtra("seccionId", -1);
 
 
-        if(fichaPersonal != null){
-            tvUser.setText("Comandera/ " +fichaPersonal.getUsuarioApp());
+        if(varGlob.getUsuarioActual() != null){
+            tvUser.setText("Comandera/ " +varGlob.getUsuarioActual().getUsuarioApp());
         }
-
         mostrarTeclado();
+
         comensales.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE ||
-                        (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                        Intent i = new Intent(ComensalesActivity.this, FamiliasActivity.class);
-                        int zonaId = getIntent().getIntExtra("zonaId", -1);
-                        i.putExtra("fichaPersonal", fichaPersonal);
-                        i.putExtra("zonaId", zonaId);
-                        i.putExtra("mesaId", mesaId);
-                        i.putExtra("seccionId", seccionId);
-                    System.out.println("ca"+comensales);
+                if (actionId == EditorInfo.IME_ACTION_DONE || (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                    Intent i = new Intent(ComensalesActivity.this, FamiliasActivity.class);
+                    Ticket ticket=new Ticket();
+                    ticket.setComensales(Integer.parseInt(comensales.getText().toString()));
+                    ticket.setNuevo(true);
+                    varGlob.setTicketActual(ticket);
+                    //intentBorrar
+                    int zonaId = getIntent().getIntExtra("zonaId", -1);
+                    i.putExtra("fichaPersonal", varGlob.getUsuarioActual());
+                    i.putExtra("zonaId", varGlob.getZonaActual().getId());
+                    i.putExtra("mesaId", varGlob.getMesaActual().getId());
+                    i.putExtra("seccionId", varGlob.getSeccionIdUsuariosActual());
+                    i.putExtra("comensales", varGlob.getTicketActual().getComensales());
 
-                    i.putExtra("comensales", Integer.parseInt(comensales.getText().toString()));
                     startActivity(i);
                     return true;
                 }
@@ -71,12 +73,8 @@ public class ComensalesActivity extends AppCompatActivity {
         comensales.requestFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.showSoftInput(comensales, InputMethodManager.SHOW_IMPLICIT);
-
-        String nombreMesa = getIntent().getStringExtra("mesaNombre");
-        String zonaVenta = getIntent().getStringExtra("zonaVenta");
-
-        if(nombreMesa != null){
-            tvZona.setText(zonaVenta.toUpperCase()+" "+nombreMesa);
+        if(varGlob.getMesaActual() != null){
+            tvZona.setText(varGlob.getZonaActual().getZona()+" "+varGlob.getMesaActual().getNombre());
         }
 
     }

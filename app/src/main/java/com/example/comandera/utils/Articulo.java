@@ -6,6 +6,7 @@ public class Articulo {
     private int familia_id;
     private String nombre;
     private String url;
+    private int tipoIVAid;
 
     public int getId() {
         return id;
@@ -45,5 +46,23 @@ public class Articulo {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public int getTipoIVAid() {
+        return tipoIVAid;
+    }
+
+    public void setTipoIVAid(int tipoIVAid) {
+        this.tipoIVAid = tipoIVAid;
+    }
+
+    @Override
+    public String toString() {
+        return id + " || " +
+                codigo + " || " +
+                familia_id + " || " +
+                nombre + " || " +
+                url+" || "+
+                tipoIVAid;
     }
 }

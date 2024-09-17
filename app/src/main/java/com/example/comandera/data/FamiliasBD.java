@@ -13,14 +13,14 @@ import java.util.List;
 public class FamiliasBD {
     private SQLServerConnection sqlServerConnection;
 
-    public FamiliasBD(Context context) {
-        sqlServerConnection = new SQLServerConnection(context);
+    public FamiliasBD(SQLServerConnection connection) {
+        sqlServerConnection = connection;
     }
 
     public List<Familia> getVisibleFamilias(int zonaId) {
         List<Familia> familias = new ArrayList<>();
         String sql = "SELECT * FROM FAMILIAS WHERE VISIBLE_TPV = 1 AND ESTADO = 0 AND ID NOT IN " +
-                "(SELECT ID FROM FAMILIA_VETADA_ZONA WHERE ZONA_ID = ?)";
+                "(SELECT familia_id FROM FAMILIA_VETADA_ZONA WHERE ZONA_ID = ?)";
 
         try {
             PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(sql);

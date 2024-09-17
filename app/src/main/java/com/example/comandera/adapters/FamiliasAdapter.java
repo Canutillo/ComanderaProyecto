@@ -7,12 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.comandera.ArticulosActivity;
 import com.example.comandera.R;
+import com.example.comandera.VariablesGlobales;
 import com.example.comandera.utils.Familia;
 import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.Ticket;
@@ -25,8 +27,9 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
     private int zonaId, mesaId, comensales, seccionId;
     private Ticket ticket;
     private FichaPersonal fichaPersonal;
+    private VariablesGlobales varGlob;
 
-    public FamiliasAdapter(Context context, List<Familia> familias, int zonaId, FichaPersonal fichaPersonal, int mesaId, Ticket ticket, int comensales, int seccionId) {
+    public FamiliasAdapter(Context context, List<Familia> familias, int zonaId, FichaPersonal fichaPersonal, int mesaId, Ticket ticket, int comensales, int seccionId, VariablesGlobales varGlob) {
         this.context = context;
         this.familias = familias;
         this.zonaId = zonaId;
@@ -35,6 +38,7 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
         this.ticket = ticket;
         this.comensales = comensales;
         this.seccionId = seccionId;
+        this.varGlob=varGlob;
     }
 
     @NonNull
@@ -61,6 +65,7 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                varGlob.setFamiliaActual(familia);
                 Intent intent = new Intent(context, ArticulosActivity.class);
                 intent.putExtra("familiaId", familia.getId());
                 intent.putExtra("familiaNombre", familia.getNombre());
@@ -70,7 +75,6 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
                 intent.putExtra("fichaPersonal", fichaPersonal);
                 intent.putExtra("comensales", comensales);
                 intent.putExtra("seccionId", seccionId);
-
                 context.startActivity(intent);
             }
         });

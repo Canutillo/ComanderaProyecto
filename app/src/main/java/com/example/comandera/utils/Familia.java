@@ -29,4 +29,11 @@ public class Familia {
     public void setImage(String image) {
         this.image = image;
     }
+
+    @Override
+    public String toString() {
+        return id + " || " +
+                nombre + " || " +
+                image;
+    }
 }

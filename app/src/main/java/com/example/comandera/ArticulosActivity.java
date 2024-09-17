@@ -40,13 +40,8 @@ import java.util.List;
 public class ArticulosActivity extends AppCompatActivity {
     VariablesGlobales varGlob;
     RecyclerView recyclerViewArticulos, recyclerTicket;
-    int zonaId, comensales, familiaId, cabeceraId;
-    FichaPersonal fichaPersonal;
     TextView tvText, tvUser;
-    Articulo art;
-    String androidID;
     private Ticket existingTicket;
-    private int mesaId, dispositivoId, seccionId, idSerie, idUsuarioTpv;
     TicketAdapter ticketAdapter;
 
 
@@ -69,49 +64,39 @@ public class ArticulosActivity extends AppCompatActivity {
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
         recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
 
-        androidID = DeviceInfo.getAndroidID(this);
-
-
-        familiaId = getIntent().getIntExtra("familiaId", -1);
-        String familiaNombre = getIntent().getStringExtra("familiaNombre");
-        zonaId = getIntent().getIntExtra("zonaId", -1);
-        mesaId = getIntent().getIntExtra("mesaId", -1);
-        fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
-        seccionId = getIntent().getIntExtra("seccionId", -1);
-        idSerie = 1;
-        idUsuarioTpv = fichaPersonal.getId();
-        comensales = getIntent().getIntExtra("comensales", -1);
         recyclerViewArticulos.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
 
-        if (fichaPersonal != null) {
+        if (varGlob.getUsuarioActual() != null) {
             tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp()+"/  "+varGlob.getMesaActual().getNombre());
         }
-        if(familiaNombre != null){
-            tvText.setText(familiaNombre);
+        if(varGlob.getFamiliaActual().getNombre() != null){
+            tvText.setText(varGlob.getFamiliaActual().getNombre());
         }
-        new GetDispositivoIdTask().execute(androidID);
 
-        new GetArticulos().execute(familiaId);
+        new GetArticulos().execute();
     }
 
     private class GetArticulos extends AsyncTask<Integer, Void, List<Articulo>> {
         @Override
         protected List<Articulo> doInBackground(Integer... params) {
-            int familiaId = params[0];
             ArticulosBD articulosBD = new ArticulosBD(ArticulosActivity.this);
-            return articulosBD.getArticulos(familiaId, zonaId);
+            return articulosBD.getArticulos(varGlob.getFamiliaActual().getId(), varGlob.getZonaActual().getId());
         }
 
         @Override
         protected void onPostExecute(List<Articulo> articulos) {
             if (articulos != null && !articulos.isEmpty()) {
                 ArticulosAdapter adapter = new ArticulosAdapter(ArticulosActivity.this, articulos, new ArticulosAdapter.OnItemClickListener() {
+                    //Cuando pinche en un articulo se añaden las cosas en el ticket local y tengo que actualizar el broadcaster de familias activity
                     @Override
                     public void onItemClick(Articulo articulo) {
-                        art = articulo;
-                        // Si no existe ticket, crear uno antes de continuar
-                        new GetTicketTask(mesaId, dispositivoId, seccionId).execute();
+                        varGlob.setArticuloActual(articulo);
+                        Toast.makeText(ArticulosActivity.this,articulo.toString(),Toast.LENGTH_SHORT).show();
+
+
+                        // Codigo de Carlota a BORRAR
+                        //new GetTicketTask(mesaId, dispositivoId, seccionId).execute();
                     }
                 });
                 recyclerViewArticulos.setAdapter(adapter);
@@ -138,7 +123,7 @@ public class ArticulosActivity extends AppCompatActivity {
             } else {
                 /*Toast.makeText(ArticulosActivity.this, "No se encontraron preguntas para este artículo", Toast.LENGTH_SHORT).show();*/
 
-                new LoadDescripcionesLargasTask().execute(existingTicket.getId());
+                new LoadDescripcionesLargasTask().execute(varGlob.getTicketActual().getId());
                 updateFamiliasActivity();
             }
         }
@@ -219,12 +204,12 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected Ticket doInBackground(Articulo... params) {
             Articulo articulo = params[0];
-            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
 
             if (existingTicket == null) {
                 throw new IllegalStateException("No existe un ticket para agregar artículos.");
             }
-            ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), zonaId);
+            ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), varGlob.getZonaActual().getId());
 
             return existingTicket;
         }
@@ -234,7 +219,7 @@ public class ArticulosActivity extends AppCompatActivity {
             existingTicket = ticket;
             //actualizar la interfaz del ticket cuando añado un articulo
             /*new LoadDescripcionesLargasTask().execute(existingTicket.getId());*/
-            new GetPreguntas().execute(art.getId());
+            new GetPreguntas().execute(varGlob.getArticuloActual().getId());
             /*updateFamiliasActivity();*/
         }
     }
@@ -254,15 +239,15 @@ public class ArticulosActivity extends AppCompatActivity {
 
         @Override
         protected Ticket doInBackground(Void... voids) {
-            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
 
             // Crear un nuevo ticket
-            long newTicketId = ticketBD.createNewTicket(idSerie, seccionId, dispositivoId, mesaId, idUsuarioTpv, comensales, articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
-            existingTicket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
+            long newTicketId = ticketBD.createNewTicket(1 /*Ver lo de las series en el futuro*/, varGlob.getSeccionIdUsuariosActual(), varGlob.getIdDispositivoActual(), varGlob.getMesaActual().getId(), varGlob.getUsuarioActual().getId(), varGlob.getTicketActual().getComensales(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
+            existingTicket = ticketBD.getTicketForMesa(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
 
             if (existingTicket != null) {
                 // Agregar el artículo al ticket recién creado
-                ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), zonaId);
+                ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), varGlob.getZonaActual().getId());
             }
 
             return existingTicket;
@@ -299,7 +284,7 @@ public class ArticulosActivity extends AppCompatActivity {
 
         @Override
         protected Ticket doInBackground(Void... voids) {
-            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
             return ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
         }
 
@@ -309,10 +294,10 @@ public class ArticulosActivity extends AppCompatActivity {
 
             if (existingTicket == null) {
                 // Si no existe un ticket, crear uno y añadir el artículo
-                new CreateTicketTask(art).execute();
+                new CreateTicketTask(varGlob.getArticuloActual()).execute();
             } else {
                 // Si el ticket ya existe, agregar el artículo al ticket existente
-                new AddArticuloToTicketTask().execute(art);
+                new AddArticuloToTicketTask().execute(varGlob.getArticuloActual());
             }
         }
     }
@@ -323,7 +308,7 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected List<DetalleDocumento> doInBackground(Integer... params) {
             int cabeceraId = params[0];
-            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
             return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
         }
 
@@ -342,31 +327,9 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
-    //coger el id del dispositivo, necesario para la bbdd
-    private class GetDispositivoIdTask extends AsyncTask<String, Void, Integer> {
-        @Override
-        protected Integer doInBackground(String... params) {
-            String androidID = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(ArticulosActivity.this);
-            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
-            return dispositivosBD.getId(androidID);
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            if (result != null) {
-                dispositivoId = result;
-                // Llamar al método para cargar y mostrar descripciones una vez que dispositivoId esté disponible
-                loadAndDisplayDescriptions();
-            } else {
-                Toast.makeText(ArticulosActivity.this, "Error: No se encontró el dispositivo.", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }
-    }
 
     private void loadAndDisplayDescriptions() {
-        new LoadTicketAndDescriptionsTask().execute(mesaId, dispositivoId, seccionId);
+        new LoadTicketAndDescriptionsTask().execute(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
     }
 
     private class LoadTicketAndDescriptionsTask extends AsyncTask<Integer, Void, Ticket> {
@@ -376,12 +339,9 @@ public class ArticulosActivity extends AppCompatActivity {
             int dispositivoId = params[1];
             int seccionId = params[2];
 
-            TicketBD ticketBD = new TicketBD(ArticulosActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
             Ticket ticket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
 
-            if (ticket != null) {
-                cabeceraId = ticket.getId();
-            }
 
             return ticket;
         }
@@ -389,8 +349,8 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Ticket ticket) {
             if (ticket != null) {
-                if (cabeceraId > 0) {
-                    new ArticulosActivity.LoadDescripcionesLargasTask().execute(cabeceraId);
+                if (varGlob.getTicketActual().getId() > 0) {
+                    new ArticulosActivity.LoadDescripcionesLargasTask().execute(varGlob.getTicketActual().getId());
                 } else {
                     Toast.makeText(ArticulosActivity.this, "Error: Cabecera ID inválido.", Toast.LENGTH_SHORT).show();
                 }

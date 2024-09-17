@@ -3,8 +3,12 @@ package com.example.comandera;
 import android.app.Application;
 
 import com.example.comandera.data.SQLServerConnection;
+import com.example.comandera.utils.TipoIVA;
+import com.example.comandera.utils.Articulo;
+import com.example.comandera.utils.Familia;
 import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.Mesa;
+import com.example.comandera.utils.Ticket;
 import com.example.comandera.utils.ZonaVenta;
 
 import java.util.List;
@@ -19,6 +23,12 @@ public class VariablesGlobales extends Application {
     private List<ZonaVenta> listaZonas;
     private ZonaVenta zonaActual;
     private Mesa mesaActual;
+    private Ticket ticketActual;
+    private Familia familiaActual;
+    private Articulo articuloActual;
+    private List<TipoIVA> tiposIVA;
+
+
 
     public SQLServerConnection getConexionSQL() {
         return conexionSQL;
@@ -90,5 +100,29 @@ public class VariablesGlobales extends Application {
 
     public void setMesaActual(Mesa mesaActual) {
         this.mesaActual = mesaActual;
+    }
+
+    public Ticket getTicketActual() {
+        return ticketActual;
+    }
+
+    public void setTicketActual(Ticket ticketActual) {
+        this.ticketActual = ticketActual;
+    }
+
+    public Familia getFamiliaActual() {
+        return familiaActual;
+    }
+
+    public void setFamiliaActual(Familia familiaActual) {
+        this.familiaActual = familiaActual;
+    }
+
+    public Articulo getArticuloActual() {
+        return articuloActual;
+    }
+
+    public void setArticuloActual(Articulo articuloActual) {
+        this.articuloActual = articuloActual;
     }
 }

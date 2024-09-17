@@ -39,11 +39,7 @@ import java.util.List;
 public class FamiliasActivity extends AppCompatActivity {
     VariablesGlobales varGlob;
     RecyclerView recyclerViewFamilias, recyclerTicket;
-    FichaPersonal fichaPersonal;
     TextView tvUser;
-    String androidID;
-    int zonaId, mesaId, comensales, seccionId, dispositivoId, cabeceraId;
-    Ticket ticket;
     TicketAdapter ticketAdapter;
 
     @Override
@@ -58,8 +54,9 @@ public class FamiliasActivity extends AppCompatActivity {
             return insets;
         });
         varGlob=(VariablesGlobales) getApplicationContext();
-
         LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter("com.example.comandera.UPDATE_FAMILIAS"));
+        //Pruebas a borrar
+        Toast.makeText(FamiliasActivity.this,varGlob.getZonaActual().getIdTarifaVenta()+"",Toast.LENGTH_LONG).show();
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
@@ -69,34 +66,49 @@ public class FamiliasActivity extends AppCompatActivity {
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
 
-        fichaPersonal = getIntent().getParcelableExtra("fichaPersonal");
-        ticket = getIntent().getParcelableExtra("ticket");
-        seccionId = getIntent().getIntExtra("seccionId", -1);
-        comensales = getIntent().getIntExtra("comensales", -1);
-        androidID = DeviceInfo.getAndroidID(this);
-
-        if (fichaPersonal != null) {
+        if (varGlob.getUsuarioActual() != null) {
             tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp()+"/  "+varGlob.getMesaActual().getNombre());
         }
-
-        zonaId = getIntent().getIntExtra("zonaId", -1);
-        mesaId = getIntent().getIntExtra("mesaId", -1);
-
-        // Ejecutar primero para obtener el dispositivoId y luego continuar con las demás tareas
-        new GetDispositivoIdTask().execute(androidID);
-        new GetVisibleFamilias().execute(zonaId);
+        //CODIGO CARLOTA A BORRAR
+        //loadAndDisplayDescriptions();
+        cargaTicket();
+        new GetVisibleFamilias().execute(varGlob.getZonaActual().getId());
     }
 
-    // BroadcastReceiver para manejar actualizaciones de ticket
+    //NUEVO METODO PARA PINTAR EL TICKET
+    public void cargaTicket(){
+        if (varGlob.getTicketActual().getDetallesTicket() != null && !varGlob.getTicketActual().getDetallesTicket().isEmpty()) {
+            if (ticketAdapter == null) {
+                ticketAdapter = new TicketAdapter(FamiliasActivity.this, varGlob.getTicketActual().getDetallesTicket());
+                recyclerTicket.setAdapter(ticketAdapter);
+            } else {
+                ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
+            }
+        } else {
+            Toast.makeText(FamiliasActivity.this, "No se encontraron detalles del documento.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MesasActivity.class);
+        startActivity(intent);
+        finish();  // Si quieres cerrar la actividad actual
+    }
+
+    // BroadcastReceiver para manejar actualizaciones de ticket desde otras activities
     private BroadcastReceiver updateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("com.example.comandera.UPDATE_FAMILIAS")) {
-                loadAndDisplayDescriptions();
+                cargaTicket();
                 Toast.makeText(FamiliasActivity.this, "Se ha actualizado el ticket", Toast.LENGTH_SHORT).show();
             }
         }
     };
+
+
 
     @Override
     protected void onDestroy() {
@@ -104,57 +116,32 @@ public class FamiliasActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
     }
 
-    //apartir de aqui los task son para mostrar los articulos en el ticket
-    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<DetalleDocumento>> {
+
+    private class GetVisibleFamilias extends AsyncTask<Integer, Void, List<Familia>> {
         @Override
-        protected List<DetalleDocumento> doInBackground(Integer... params) {
-            int cabeceraId = params[0];
-            TicketBD ticketBD = new TicketBD(FamiliasActivity.this);
-            return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
+        protected List<Familia> doInBackground(Integer... params) {
+            FamiliasBD familiasBD = new FamiliasBD(varGlob.getConexionSQL());
+            return familiasBD.getVisibleFamilias(varGlob.getZonaActual().getId());
         }
 
         @Override
-        protected void onPostExecute(List<DetalleDocumento> detalles) {
-            if (detalles != null && !detalles.isEmpty()) {
-                if (ticketAdapter == null) {
-                    ticketAdapter = new TicketAdapter(FamiliasActivity.this, detalles);
-                    recyclerTicket.setAdapter(ticketAdapter);
-                } else {
-                    ticketAdapter.updateData(detalles);
-                }
+        protected void onPostExecute(List<Familia> familias) {
+            if (familias != null && !familias.isEmpty()) {
+                FamiliasAdapter adapter = new FamiliasAdapter(FamiliasActivity.this, familias, varGlob.getZonaActual().getId(), varGlob.getUsuarioActual(), varGlob.getMesaActual().getId(), varGlob.getTicketActual(), varGlob.getTicketActual().getComensales(), varGlob.getSeccionIdUsuariosActual(), varGlob);
+                recyclerViewFamilias.setAdapter(adapter);
+                //EL ON CLICK SE GESTIONA EN LA CLASE ADAPTER
             } else {
-                Toast.makeText(FamiliasActivity.this, "No se encontraron detalles del documento.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FamiliasActivity.this, "No se encontraron familias visibles para esta zona", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-
-    private class GetDispositivoIdTask extends AsyncTask<String, Void, Integer> {
-        @Override
-        protected Integer doInBackground(String... params) {
-            String androidID = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(FamiliasActivity.this);
-            DispositivosBD dispositivosBD = new DispositivosBD(sqlServerConnection);
-            return dispositivosBD.getId(androidID);
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            if (result != null) {
-                dispositivoId = result;
-
-                // Llamar al método para cargar y mostrar descripciones una vez que dispositivoId esté disponible
-                loadAndDisplayDescriptions();
-            } else {
-                Toast.makeText(FamiliasActivity.this, "Error: No se encontró el dispositivo.", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }
-    }
-
+    //A partir de aqui es como funcionaba antes a Borrar
+/*
     private void loadAndDisplayDescriptions() {
-        new LoadTicketAndDescriptionsTask().execute(mesaId, dispositivoId, seccionId);
+        new LoadTicketAndDescriptionsTask().execute(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
     }
+
 
     private class LoadTicketAndDescriptionsTask extends AsyncTask<Integer, Void, Ticket> {
         private int cabeceraId = -1;
@@ -165,7 +152,7 @@ public class FamiliasActivity extends AppCompatActivity {
             int dispositivoId = params[1];
             int seccionId = params[2];
 
-            TicketBD ticketBD = new TicketBD(FamiliasActivity.this);
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
             Ticket ticket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
 
             if (ticket != null) {
@@ -189,23 +176,28 @@ public class FamiliasActivity extends AppCompatActivity {
             }
         }
     }
-
-    private class GetVisibleFamilias extends AsyncTask<Integer, Void, List<Familia>> {
+    //apartir de aqui los task son para mostrar los articulos en el ticket
+    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<DetalleDocumento>> {
         @Override
-        protected List<Familia> doInBackground(Integer... params) {
-            int zonaId = params[0];
-            FamiliasBD familiasBD = new FamiliasBD(FamiliasActivity.this);
-            return familiasBD.getVisibleFamilias(zonaId);
+        protected List<DetalleDocumento> doInBackground(Integer... params) {
+            int cabeceraId = params[0];
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+            return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
         }
 
         @Override
-        protected void onPostExecute(List<Familia> familias) {
-            if (familias != null && !familias.isEmpty()) {
-                FamiliasAdapter adapter = new FamiliasAdapter(FamiliasActivity.this, familias, zonaId, fichaPersonal, mesaId, ticket, comensales, seccionId);
-                recyclerViewFamilias.setAdapter(adapter);
+        protected void onPostExecute(List<DetalleDocumento> detalles) {
+            if (detalles != null && !detalles.isEmpty()) {
+                if (ticketAdapter == null) {
+                    ticketAdapter = new TicketAdapter(FamiliasActivity.this, detalles);
+                    recyclerTicket.setAdapter(ticketAdapter);
+                } else {
+                    ticketAdapter.updateData(detalles);
+                }
             } else {
-                Toast.makeText(FamiliasActivity.this, "No se encontraron familias visibles para esta zona", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FamiliasActivity.this, "No se encontraron detalles del documento.", Toast.LENGTH_SHORT).show();
             }
         }
     }
+*/
 }

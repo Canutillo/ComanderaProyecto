@@ -27,7 +27,15 @@ public class ZonasVentaBD {
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String zona = resultSet.getString("zona");
-                zonas.add(new ZonaVenta(id, zona));
+                int idTarifa=0;
+                String queryTarifa="SELECT id FROM TIPOS_TARIFA_VENTA WHERE zona_id= ?";
+                PreparedStatement preparedStatement1 =sqlConnection.getConexion().prepareStatement(queryTarifa);
+                preparedStatement1.setInt(1,id);
+                ResultSet resultSet1=preparedStatement1.executeQuery();
+                if(resultSet1.next()){
+                    idTarifa = resultSet1.getInt("id");
+                }
+                zonas.add(new ZonaVenta(id, zona, idTarifa));
             }
 
         } catch (Exception e) {

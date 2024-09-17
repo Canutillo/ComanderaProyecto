@@ -39,6 +39,7 @@ public class ArticulosBD {
                     articulo.setFamilia_id(resultSet.getInt("FAMILIA_ID"));
                     articulo.setNombre(resultSet.getString("ARTICULO"));
                     articulo.setUrl(resultSet.getString("IMAGEN"));
+                    articulo.setTipoIVAid(resultSet.getInt("tipo_iva_id"));
                     articulos.add(articulo);
                 }
 
