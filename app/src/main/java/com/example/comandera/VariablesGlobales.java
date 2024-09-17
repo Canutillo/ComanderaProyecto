@@ -3,6 +3,7 @@ package com.example.comandera;
 import android.app.Application;
 
 import com.example.comandera.data.SQLServerConnection;
+import com.example.comandera.utils.TarifasDeVenta;
 import com.example.comandera.utils.TipoIVA;
 import com.example.comandera.utils.Articulo;
 import com.example.comandera.utils.Familia;
@@ -27,6 +28,7 @@ public class VariablesGlobales extends Application {
     private Familia familiaActual;
     private Articulo articuloActual;
     private List<TipoIVA> tiposIVA;
+    private List<TarifasDeVenta> tarifasDeVentas;
 
 
 
@@ -124,5 +126,21 @@ public class VariablesGlobales extends Application {
 
     public void setArticuloActual(Articulo articuloActual) {
         this.articuloActual = articuloActual;
+    }
+
+    public List<TipoIVA> getTiposIVA() {
+        return tiposIVA;
+    }
+
+    public void setTiposIVA(List<TipoIVA> tiposIVA) {
+        this.tiposIVA = tiposIVA;
+    }
+
+    public List<TarifasDeVenta> getTarifasDeVentas() {
+        return tarifasDeVentas;
+    }
+
+    public void setTarifasDeVentas(List<TarifasDeVenta> tarifasDeVentas) {
+        this.tarifasDeVentas = tarifasDeVentas;
     }
 }

@@ -2,7 +2,7 @@ package com.example.comandera.utils;
 
 public class TarifasDeVenta {
     private int id;
-    private float precio;
+    private double precio;
     private int tipoTarifa;
     private int articuloId;
 
@@ -14,11 +14,11 @@ public class TarifasDeVenta {
         this.id = id;
     }
 
-    public float getPrecio() {
+    public double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(float precio) {
+    public void setPrecio(double precio) {
         this.precio = precio;
     }
 
@@ -37,4 +37,10 @@ public class TarifasDeVenta {
     public void setArticuloId(int articuloId) {
         this.articuloId = articuloId;
     }
+
+    @Override
+    public String toString() {
+        return id + " || " + precio + " || " + tipoTarifa + " || " + articuloId +"\n";
+    }
+
 }

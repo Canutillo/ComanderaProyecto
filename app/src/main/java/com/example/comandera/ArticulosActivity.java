@@ -75,8 +75,30 @@ public class ArticulosActivity extends AppCompatActivity {
         }
 
         new GetArticulos().execute();
+        cargaTicket();
     }
 
+    //METODO PARA MOSTRAR LOS DETALLES DEL TICKET
+    public void cargaTicket(){
+        if (varGlob.getTicketActual().getDetallesTicket() != null && !varGlob.getTicketActual().getDetallesTicket().isEmpty()) {
+            if (ticketAdapter == null) {
+                ticketAdapter = new TicketAdapter(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket());
+                recyclerTicket.setAdapter(ticketAdapter);
+            } else {
+                ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
+            }
+        } else {
+            Toast.makeText(ArticulosActivity.this, "Ticket vacio.", Toast.LENGTH_SHORT).show();
+        }
+        updateFamiliasActivity();
+    }
+
+    private void updateFamiliasActivity() {
+        Intent intent = new Intent("com.example.comandera.UPDATE_FAMILIAS");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    //OBTIENE LOS ARTICULOS Y GESTIONA EL ONCLICK
     private class GetArticulos extends AsyncTask<Integer, Void, List<Articulo>> {
         @Override
         protected List<Articulo> doInBackground(Integer... params) {
@@ -92,11 +114,7 @@ public class ArticulosActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(Articulo articulo) {
                         varGlob.setArticuloActual(articulo);
-                        Toast.makeText(ArticulosActivity.this,articulo.toString(),Toast.LENGTH_SHORT).show();
-
-
-                        // Codigo de Carlota a BORRAR
-                        //new GetTicketTask(mesaId, dispositivoId, seccionId).execute();
+                        new GetPreguntas().execute();
                     }
                 });
                 recyclerViewArticulos.setAdapter(adapter);
@@ -106,14 +124,12 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
-    //coger las preguntas que tiene cada articulo
+    //COGE LAS PREGUNTAS QUE TIENE CADA ARTICULO Y AÑADE LOS QUE NO TIENE PREGUNTAS
     private class GetPreguntas extends AsyncTask<Integer, Void, List<PreguntaArticulo>> {
         @Override
         protected List<PreguntaArticulo> doInBackground(Integer... params) {
-            int articuloId = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(ArticulosActivity.this);
-            PreguntasBD preguntasBD = new PreguntasBD(sqlServerConnection);
-            return preguntasBD.getPreguntas(articuloId);
+            PreguntasBD preguntasBD = new PreguntasBD(varGlob.getConexionSQL());
+            return preguntasBD.getPreguntas(varGlob.getArticuloActual().getId());
         }
 
         @Override
@@ -121,10 +137,9 @@ public class ArticulosActivity extends AppCompatActivity {
             if (preguntas != null && !preguntas.isEmpty()) {
                 showPreguntaDialog(preguntas, 0, new ArrayList<>());
             } else {
-                /*Toast.makeText(ArticulosActivity.this, "No se encontraron preguntas para este artículo", Toast.LENGTH_SHORT).show();*/
-
-                new LoadDescripcionesLargasTask().execute(varGlob.getTicketActual().getId());
-                updateFamiliasActivity();
+                //AÑADIR PRODUCTOS SIN PREGUNTAS
+                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(),varGlob.getTiposIVA(),varGlob.getTarifasDeVentas(),"",varGlob.getZonaActual().getIdTarifaVenta());
+                cargaTicket();
             }
         }
     }
@@ -134,7 +149,7 @@ public class ArticulosActivity extends AppCompatActivity {
         new GetOpciones(preguntas, index, opcionesSeleccionadas).execute(pregunta);
     }
 
-    //coge las opciones que hay para cada pregunta y con el metodo de arriba las muestra AQUI ES DONDE
+    //MUESTRA LAS OPCIONES Y AÑADE LAS RESPUESTAS COMO DESCRIPCION LARGA
     private class GetOpciones extends AsyncTask<PreguntaArticulo, Void, List<String>> {
         private List<PreguntaArticulo> preguntas;
         private int index;
@@ -150,8 +165,7 @@ public class ArticulosActivity extends AppCompatActivity {
         @Override
         protected List<String> doInBackground(PreguntaArticulo... params) {
             pregunta = params[0];
-            SQLServerConnection sqlServerConnection = new SQLServerConnection(ArticulosActivity.this);
-            PreguntasBD preguntasBD = new PreguntasBD(sqlServerConnection);
+            PreguntasBD preguntasBD = new PreguntasBD(varGlob.getConexionSQL());
             return preguntasBD.getOpciones(pregunta.getId());
         }
 
@@ -173,12 +187,10 @@ public class ArticulosActivity extends AppCompatActivity {
                             dialog.dismiss();
                             if (index < preguntas.size() - 1) {
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
-                                //Toast.makeText(ArticulosActivity.this, opcionesSeleccionadas.toString(), Toast.LENGTH_SHORT).show();
                             } else {
-                                /*Toast.makeText(ArticulosActivity.this, "Papapapapa", Toast.LENGTH_SHORT).show();*/
-                                new LoadDescripcionesLargasTask().execute(existingTicket.getId());
-                                updateFamiliasActivity();
-
+                                //AÑADIR PRODUCTOS CON PREGUNTAS
+                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(),varGlob.getTiposIVA(),varGlob.getTarifasDeVentas(),opcionesSeleccionadas.toString(),varGlob.getZonaActual().getIdTarifaVenta());
+                                cargaTicket();
                             }
                         });
                 if(index>0){
@@ -199,7 +211,7 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
-    //añadir un articulo al ticket, que en bbdd es añadir una fila a detalle_documentos_venta con el id de la cabecera
+    //NO SE USA
     private class AddArticuloToTicketTask extends AsyncTask<Articulo, Void, Ticket> {
         @Override
         protected Ticket doInBackground(Articulo... params) {
@@ -224,12 +236,9 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
-    private void updateFamiliasActivity() {
-        Intent intent = new Intent("com.example.comandera.UPDATE_FAMILIAS");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
 
-    //crear el ticket
+
+    //NO SE USA
     private class CreateTicketTask extends AsyncTask<Void, Void, Ticket> {
         private Articulo articulo;
 
@@ -242,7 +251,7 @@ public class ArticulosActivity extends AppCompatActivity {
             TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
 
             // Crear un nuevo ticket
-            long newTicketId = ticketBD.createNewTicket(1 /*Ver lo de las series en el futuro*/, varGlob.getSeccionIdUsuariosActual(), varGlob.getIdDispositivoActual(), varGlob.getMesaActual().getId(), varGlob.getUsuarioActual().getId(), varGlob.getTicketActual().getComensales(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
+            //long newTicketId = ticketBD.createNewTicket(1 /*Ver lo de las series en el futuro*/, varGlob.getSeccionIdUsuariosActual(), varGlob.getIdDispositivoActual(), varGlob.getMesaActual().getId(), varGlob.getUsuarioActual().getId(), varGlob.getTicketActual().getComensales(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
             existingTicket = ticketBD.getTicketForMesa(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
 
             if (existingTicket != null) {
@@ -302,6 +311,7 @@ public class ArticulosActivity extends AppCompatActivity {
         }
     }
 
+    //NO USADO
 
     //apartir de aqui los task son para mostrar los articulos en el ticket
     private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<DetalleDocumento>> {
@@ -332,6 +342,7 @@ public class ArticulosActivity extends AppCompatActivity {
         new LoadTicketAndDescriptionsTask().execute(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
     }
 
+    //NO USADO
     private class LoadTicketAndDescriptionsTask extends AsyncTask<Integer, Void, Ticket> {
         @Override
         protected Ticket doInBackground(Integer... params) {

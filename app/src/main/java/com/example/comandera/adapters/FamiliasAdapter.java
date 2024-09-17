@@ -67,14 +67,6 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
             public void onClick(View v) {
                 varGlob.setFamiliaActual(familia);
                 Intent intent = new Intent(context, ArticulosActivity.class);
-                intent.putExtra("familiaId", familia.getId());
-                intent.putExtra("familiaNombre", familia.getNombre());
-                intent.putExtra("ticket", ticket);
-                intent.putExtra("zonaId", zonaId);
-                intent.putExtra("mesaId", mesaId);
-                intent.putExtra("fichaPersonal", fichaPersonal);
-                intent.putExtra("comensales", comensales);
-                intent.putExtra("seccionId", seccionId);
                 context.startActivity(intent);
             }
         });

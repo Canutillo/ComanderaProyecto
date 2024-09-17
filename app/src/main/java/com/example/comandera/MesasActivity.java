@@ -48,6 +48,7 @@ public class MesasActivity extends AppCompatActivity {
             return insets;
         });
         varGlob=(VariablesGlobales) getApplicationContext();
+        //Toast.makeText(MesasActivity.this,varGlob.getTiposIVA().toString(),Toast.LENGTH_LONG).show();
 
         tvUser = findViewById(R.id.tvUser);
         recyclerViewZonas = findViewById(R.id.recyclerViewZonas);
@@ -194,19 +195,9 @@ public class MesasActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Ticket ticket) {
+
             Intent intent =new Intent(MesasActivity.this,FamiliasActivity.class);
             varGlob.setTicketActual(ticket);
-
-            //Borrar
-            intent.putExtra("mesaId", varGlob.getMesaActual().getId());
-            intent.putExtra("zonaVenta", varGlob.getZonaActual().getZona());
-            intent.putExtra("mesaNombre", varGlob.getMesaActual().getNombre());
-            intent.putExtra("zonaId", varGlob.getZonaActual().getId());
-            intent.putExtra("seccionId", varGlob.getSeccionIdUsuariosActual());
-            intent.putExtra("fichaPersonal", varGlob.getUsuarioActual());
-            intent.putExtra("dispositivoId", varGlob.getIdDispositivoActual());
-            //Borrar hasta aqui
-
             startActivity(intent);
         }
     }

@@ -88,9 +88,53 @@ public class Ticket implements Parcelable {
     }
 
 
-   /* public void anadirArticulo(Articulo articulo){
-        DetalleDocumento detalle= new DetalleDocumento(articulo.getId(), articulo.getNombre(),1,)
-    }*/
+    public void anadirDetalleDocumentoVenta(Articulo articulo,List<TipoIVA> tiposDeIVA,List <TarifasDeVenta> tarifasDeVentas,String descripcion_larga,int idTarifaVenta ){
+        DetalleDocumento detalle=new DetalleDocumento();
+        detalle.setArticuloID(articulo.getId());
+        detalle.setDescripcion(articulo.getNombre());
+        String descLarga;
+        if(descripcion_larga.equals("")){
+            descLarga=articulo.getNombre();
+        }else{
+            descLarga=articulo.getNombre()+" || "+descripcion_larga;
+        }
+        detalle.setDescripcionLarga(descLarga);
+        detalle.setDescripcionLarga(descLarga);
+        //Calcular Precio
+        double iva=0;
+        for (TipoIVA tipoIVA:tiposDeIVA) {
+            if(articulo.getTipoIVAid()==tipoIVA.getId()){
+                iva=tipoIVA.getValorIVA();
+                break;
+            }
+        }
+        double tarifa=0;
+        for (TarifasDeVenta tarifasDeVenta:tarifasDeVentas) {
+            if(tarifasDeVenta.getArticuloId()==articulo.getId() && tarifasDeVenta.getTipoTarifa()==idTarifaVenta){
+                tarifa=tarifasDeVenta.getPrecio();
+                break;
+            }
+        }
+        detalle.setPvp(tarifa*(1+iva));
+        //Controlar cantidad
+        Boolean anadir=true;
+        for (DetalleDocumento detalleLista : this.getDetallesTicket()) {
+            if (detalleLista.getDescripcionLarga().equals(detalle.getDescripcionLarga())) {
+                detalleLista.setCantidad(detalleLista.getCantidad() + 1);
+                detalleLista.setTotalLinea(detalleLista.getTotalLinea().doubleValue()+tarifa*(1+iva));
+                anadir=false;
+                System.out.println("Repetido");
+                break;
+            }
+        };
+        if(anadir){
+            detalle.setTotalLinea(tarifa*(1+iva));
+            detalle.setCantidad(1);
+            this.getDetallesTicket().add(detalle);
+        }
+        System.out.println(detalle.getCantidad());
+        System.out.println(detalle.getTotalLinea());
+    }
 
     @Override
     public String toString() {

@@ -21,4 +21,10 @@ public class TipoIVA {
     public void setValorIVA(double valorIVA) {
         this.valorIVA = valorIVA;
     }
+
+    @Override
+    public String toString() {
+        return id + " || " + valorIVA + "\n";
+    }
+
 }

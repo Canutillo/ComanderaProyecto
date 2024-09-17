@@ -59,7 +59,7 @@ public class TicketBD {
     public void cargarDetallesEnTicket(Ticket ticket,Context context){
         if (ticket!=null){
             if (sqlServerConnection.getConexion() != null) {
-                String query = "SELECT articulo_id, descripcion, descripcion_larga, cantidad, total_linea, precio FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
+                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, total_linea, precio FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
                 try {
                     PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                     statement.setInt(1, ticket.getId());
@@ -69,7 +69,7 @@ public class TicketBD {
                         //AÑADIENDO INFORMACION A LOS DETALLES
                         DetalleDocumento detalle = new DetalleDocumento();
                         detalle.setArticuloID(resultSet.getInt("articulo_id"));
-                        detalle.setDescripcion((resultSet.getString("descripcion")));
+                        detalle.setDescripcion((resultSet.getString("descripcion_articulo")));
                         detalle.setDescripcionLarga(resultSet.getString("descripcion_larga"));
                         detalle.setCantidad(resultSet.getInt("cantidad"));
                         detalle.setTotalLinea(resultSet.getBigDecimal("total_linea").doubleValue());
@@ -88,6 +88,70 @@ public class TicketBD {
         }
     }
 
+
+    public long crearTicket(int idSerie, int idSeccion, int idDispositivo, int idMesa, int idUsuarioTpv, int comensales) {
+        long newRowId = -1;
+        if (sqlServerConnection.getConexion() != null) {
+            try {
+                int numeroCorriente = incrementarNumero();
+
+                String insertQuery = "INSERT INTO Cabecera_Documentos_Venta (Tipo, Fecha, Fecha_Contable, Serie_Id, Seccion_Id, Dispositivo_Id, Mesa_Id, Estado_Documento, Numero, Usuario_Ticket_Id, num_comensales) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+                insertStatement.setInt(1, 5);
+                Timestamp currentTimestamp = new Timestamp(new Date().getTime());
+                insertStatement.setTimestamp(2, currentTimestamp);
+                insertStatement.setTimestamp(3, currentTimestamp);
+                insertStatement.setDouble(4, idSerie);
+                insertStatement.setDouble(5, idSeccion);
+                insertStatement.setDouble(6, idDispositivo);
+                insertStatement.setDouble(7, idMesa);
+                insertStatement.setInt(8, 0);  // Estado_Documento
+                insertStatement.setDouble(9, numeroCorriente);
+                insertStatement.setDouble(10, idUsuarioTpv);
+                insertStatement.setInt(11, comensales);
+
+
+                insertStatement.executeUpdate();
+
+                // Obtener el ID de la cabecera recién creada
+                ResultSet generatedKeys = insertStatement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    newRowId = generatedKeys.getLong(1);
+                }
+
+                generatedKeys.close();
+                insertStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+            }
+        }
+        return newRowId;
+    }
+
+    public int borrarTicket(int ticketID) {
+        int columnasBorradas=0;
+        if (sqlServerConnection.getConexion() != null) {
+            try {
+
+                String insertQuery = "DELETE FROM CABECERA_DOCUMENTOS_VENTA WHERE id = ?";
+                PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery);
+                insertStatement.setInt(1,ticketID);
+                columnasBorradas=insertStatement.executeUpdate();
+                insertStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+            }
+        }
+        return columnasBorradas;
+    }
+
+
+
+
+
+    //CODIGO A BORRAR DE CARLOTA
     public long addDetalleDocumentoVenta(long cabeceraId, int articuloId, int cantidad, String desc_articulo, String desc_larga, int zonaId) {
         long result = -1;
 
@@ -183,7 +247,7 @@ public class TicketBD {
     }
 
 
-    public long createNewTicket(int idSerie, int idSeccion, int idDispositivo, int idMesa, int idUsuarioTpv, int comensales, int articuloId, int cantidad, String desc_articulo, String desc_larga) {
+    public long createNewTicket(int idSerie, int idSeccion, int idDispositivo, int idMesa, int idUsuarioTpv, int comensales) {
         long newRowId = -1;
         if (sqlServerConnection.getConexion() != null) {
             try {

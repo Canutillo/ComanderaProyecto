@@ -82,8 +82,8 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="416dp"
+        android:layout_height="77dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -94,18 +94,14 @@
             android:layout_height="match_parent"
             android:layout_weight="1" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/volver"
-            android:layout_width="4dp"
-            android:layout_height="match_parent"
+        <ImageButton
+            android:id="@+id/guardar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/border"
-            app:backgroundTint="#00D3D1D1"
-            app:icon="@drawable/volver"
-            app:iconSize="30dp"
-            app:iconTint="#575656"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:background="?attr/selectableItemBackground"
+            android:scaleType="fitCenter"
+            android:src="@drawable/guardar" />
 
     </LinearLayout>
 

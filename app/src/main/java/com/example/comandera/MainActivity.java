@@ -12,7 +12,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.MesasBD;
+import com.example.comandera.data.PreciosBD;
 import com.example.comandera.data.SQLServerConnection;
+import com.example.comandera.data.TipoIVABD;
 import com.example.comandera.data.UsuariosBD;
 import com.example.comandera.data.ZonasVentaBD;
 import com.example.comandera.utils.DeviceInfo;
@@ -83,7 +85,7 @@ private VariablesGlobales varGlob;
             varGlob.setIdDispositivoActual(vector[0]);
             varGlob.setSeccionIdUsuariosActual(vector[1]);
             if (varGlob.getSeccionIdUsuariosActual()>0) {
-                new GetActiveUserZonasMesas().execute();
+                new GetActiveUserZonasMesasPrecios().execute();
             } else {
                 Toast.makeText(MainActivity.this, "No se encontró la sección", Toast.LENGTH_SHORT).show();
             }
@@ -91,12 +93,16 @@ private VariablesGlobales varGlob;
     }
 
     // Obtener el usuario activo de la sección (RECORDAR USUARIO) y cargar la lista de usuarios en las variables globales y las zonas con sus mesas
-    private class GetActiveUserZonasMesas extends AsyncTask<Integer, Void, FichaPersonal> {
+    private class GetActiveUserZonasMesasPrecios extends AsyncTask<Integer, Void, FichaPersonal> {
         @Override
         protected FichaPersonal doInBackground(Integer... params) {
             UsuariosBD usuariosBD = new UsuariosBD(varGlob.getConexionSQL());
             ZonasVentaBD zonasVentaBD= new ZonasVentaBD(varGlob.getConexionSQL());
             MesasBD mesasBD=new MesasBD(varGlob.getConexionSQL());
+            TipoIVABD tipoIVABD= new TipoIVABD(varGlob.getConexionSQL());
+            PreciosBD preciosBD=new PreciosBD(varGlob.getConexionSQL());
+            varGlob.setTarifasDeVentas(preciosBD.cargarTablaPrecios());
+            varGlob.setTiposIVA(tipoIVABD.cargarTablaTiposDeIVA());
             varGlob.setListaZonas(zonasVentaBD.getZonasBySeccionId(varGlob.getSeccionIdUsuariosActual()));
             for (ZonaVenta item : varGlob.getListaZonas()) {
                 item.setListaMesas(mesasBD.getMesasByZonaId(item.getId()));
