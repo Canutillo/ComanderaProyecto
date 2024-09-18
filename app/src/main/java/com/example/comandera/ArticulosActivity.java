@@ -21,14 +21,10 @@ import com.example.comandera.adapters.ArticulosAdapter;
 import com.example.comandera.adapters.OpcionesAdapter;
 import com.example.comandera.adapters.TicketAdapter;
 import com.example.comandera.data.ArticulosBD;
-import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.PreguntasBD;
-import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.Articulo;
 import com.example.comandera.utils.DetalleDocumento;
-import com.example.comandera.utils.DeviceInfo;
-import com.example.comandera.utils.FichaPersonal;
 import com.example.comandera.utils.PreguntaArticulo;
 import com.example.comandera.utils.Ticket;
 
@@ -43,6 +39,7 @@ public class ArticulosActivity extends AppCompatActivity {
     TextView tvText, tvUser;
     private Ticket existingTicket;
     TicketAdapter ticketAdapter;
+
 
 
     @Override
@@ -139,6 +136,7 @@ public class ArticulosActivity extends AppCompatActivity {
             } else {
                 //AÑADIR PRODUCTOS SIN PREGUNTAS
                 varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(),varGlob.getTiposIVA(),varGlob.getTarifasDeVentas(),"",varGlob.getZonaActual().getIdTarifaVenta());
+                Toast.makeText(ArticulosActivity.this,varGlob.getTicketActual().getDetallesTicket().toString(),Toast.LENGTH_LONG).show();
                 cargaTicket();
             }
         }
@@ -210,6 +208,13 @@ public class ArticulosActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
+
+
+
+
 
     //NO SE USA
     private class AddArticuloToTicketTask extends AsyncTask<Articulo, Void, Ticket> {

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,15 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.comandera.adapters.FamiliasAdapter;
 import com.example.comandera.adapters.TicketAdapter;
-import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.FamiliasBD;
-import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.data.TicketBD;
-import com.example.comandera.utils.DetalleDocumento;
-import com.example.comandera.utils.DeviceInfo;
 import com.example.comandera.utils.Familia;
-import com.example.comandera.utils.FichaPersonal;
-import com.example.comandera.utils.Ticket;
 
 import android.content.IntentFilter;
 
@@ -41,6 +37,7 @@ public class FamiliasActivity extends AppCompatActivity {
     RecyclerView recyclerViewFamilias, recyclerTicket;
     TextView tvUser;
     TicketAdapter ticketAdapter;
+    ImageButton botonGuardar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +57,7 @@ public class FamiliasActivity extends AppCompatActivity {
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
         recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
         tvUser = findViewById(R.id.tvUser);
+        botonGuardar=findViewById(R.id.guardar);
 
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
@@ -74,6 +72,13 @@ public class FamiliasActivity extends AppCompatActivity {
         }
         new GetVisibleFamilias().execute(varGlob.getZonaActual().getId());
 
+        botonGuardar.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                new ActualizaDetalles().execute();
+            }
+        });
     }
 
     //NUEVO METODO PARA PINTAR EL TICKET
@@ -148,7 +153,7 @@ public class FamiliasActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             TicketBD ticketBD=new TicketBD(varGlob.getConexionSQL());
             //Creamos el ticket nuevo con serie 1 ya que es la que hay por ahora
-            long idNuevo = ticketBD.crearTicket(1,varGlob.getSeccionIdUsuariosActual(),varGlob.getIdDispositivoActual(),varGlob.getMesaActual().getId(),varGlob.getUsuarioActual().getId(),varGlob.getTicketActual().getComensales());
+            long idNuevo = ticketBD.crearTicket(1,varGlob.getSeccionIdUsuariosActual(),varGlob.getIdDispositivoActual(),varGlob.getMesaActual().getId(),varGlob.getUsuarioActual().getId(),varGlob.getTicketActual().getComensales(),varGlob.getZonaActual().getId());
             varGlob.getTicketActual().setId((int) idNuevo);
             return null; // Retorna null porque es de tipo Void
         }
@@ -174,6 +179,22 @@ public class FamiliasActivity extends AppCompatActivity {
                 // Ticket borrado con éxito
                 Toast.makeText(FamiliasActivity.this, "Ticket borrado", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    private class ActualizaDetalles extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+            ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+            ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            onBackPressed();
         }
     }
 }

@@ -108,6 +108,7 @@ public class Ticket implements Parcelable {
                 break;
             }
         }
+        detalle.setIva(iva);
         double tarifa=0;
         for (TarifasDeVenta tarifasDeVenta:tarifasDeVentas) {
             if(tarifasDeVenta.getArticuloId()==articulo.getId() && tarifasDeVenta.getTipoTarifa()==idTarifaVenta){
@@ -115,7 +116,9 @@ public class Ticket implements Parcelable {
                 break;
             }
         }
+        detalle.setPrecio(tarifa);
         detalle.setPvp(tarifa*(1+iva));
+        detalle.setCuotaIva(detalle.getPrecio()*detalle.getIva());
         //Controlar cantidad
         Boolean anadir=true;
         for (DetalleDocumento detalleLista : this.getDetallesTicket()) {
@@ -132,8 +135,8 @@ public class Ticket implements Parcelable {
             detalle.setCantidad(1);
             this.getDetallesTicket().add(detalle);
         }
-        System.out.println(detalle.getCantidad());
-        System.out.println(detalle.getTotalLinea());
+
+        System.out.println(detalle.toString());
     }
 
     @Override

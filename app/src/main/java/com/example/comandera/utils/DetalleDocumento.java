@@ -10,6 +10,9 @@ public class DetalleDocumento {
     private int cantidad;
     private BigDecimal totalLinea;
     private BigDecimal pvp;
+    private double precio;
+    private double iva;
+    private double cuotaIva;
 
     public DetalleDocumento() {
     }
@@ -79,13 +82,40 @@ public class DetalleDocumento {
         this.pvp = BigDecimal.valueOf(pvp).setScale(2, RoundingMode.HALF_UP);
     }
 
+    public double getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(double precio) {
+        this.precio = precio;
+    }
+
+    public double getIva() {
+        return iva;
+    }
+
+    public void setIva(double iva) {
+        this.iva = iva;
+    }
+
+    public double getCuotaIva() {
+        return cuotaIva;
+    }
+
+    public void setCuotaIva(double cuotaIva) {
+        this.cuotaIva = cuotaIva;
+    }
 
     @Override
     public String toString() {
         return articuloID + " || " +
+                descripcion + " || " +
                 descripcionLarga + " || " +
                 cantidad + " || " +
                 totalLinea + " || " +
-                pvp;
+                pvp + " || " +
+                precio + " || " +
+                iva + " || " +
+                cuotaIva;
     }
 }

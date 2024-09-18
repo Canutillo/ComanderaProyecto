@@ -59,7 +59,7 @@ public class TicketBD {
     public void cargarDetallesEnTicket(Ticket ticket,Context context){
         if (ticket!=null){
             if (sqlServerConnection.getConexion() != null) {
-                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, total_linea, precio FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
+                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, precio, total_linea, cuota_iva FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
                 try {
                     PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                     statement.setInt(1, ticket.getId());
@@ -73,7 +73,9 @@ public class TicketBD {
                         detalle.setDescripcionLarga(resultSet.getString("descripcion_larga"));
                         detalle.setCantidad(resultSet.getInt("cantidad"));
                         detalle.setTotalLinea(resultSet.getBigDecimal("total_linea").doubleValue());
-                        detalle.setPvp(resultSet.getBigDecimal("precio").doubleValue());
+                        detalle.setPrecio(resultSet.getDouble("precio"));
+                        detalle.setCuotaIva(resultSet.getDouble("cuota_iva"));
+                        detalle.setPvp(resultSet.getDouble("precio")+resultSet.getDouble("cuota_iva"));
                         ticket.getDetallesTicket().add(detalle);
                     }
                     resultSet.close();
@@ -89,13 +91,13 @@ public class TicketBD {
     }
 
 
-    public long crearTicket(int idSerie, int idSeccion, int idDispositivo, int idMesa, int idUsuarioTpv, int comensales) {
+    public long crearTicket(int idSerie, int idSeccion, int idDispositivo, int idMesa, int idUsuarioTpv, int comensales, int zonaID) {
         long newRowId = -1;
         if (sqlServerConnection.getConexion() != null) {
             try {
                 int numeroCorriente = incrementarNumero();
 
-                String insertQuery = "INSERT INTO Cabecera_Documentos_Venta (Tipo, Fecha, Fecha_Contable, Serie_Id, Seccion_Id, Dispositivo_Id, Mesa_Id, Estado_Documento, Numero, Usuario_Ticket_Id, num_comensales) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+                String insertQuery = "INSERT INTO Cabecera_Documentos_Venta (Tipo, Fecha, Fecha_Contable, Serie_Id, Seccion_Id, Dispositivo_Id, Mesa_Id, Estado_Documento, Numero, Usuario_Ticket_Id, num_comensales, zona_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
                 PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
                 insertStatement.setInt(1, 5);
                 Timestamp currentTimestamp = new Timestamp(new Date().getTime());
@@ -109,6 +111,7 @@ public class TicketBD {
                 insertStatement.setDouble(9, numeroCorriente);
                 insertStatement.setDouble(10, idUsuarioTpv);
                 insertStatement.setInt(11, comensales);
+                insertStatement.setInt(12,zonaID);
 
 
                 insertStatement.executeUpdate();
@@ -129,6 +132,24 @@ public class TicketBD {
         return newRowId;
     }
 
+    public int incrementarNumero() throws SQLException {
+        String getMaxNumeroQuery = "SELECT MAX(Numero) AS MaxNumero FROM Cabecera_Documentos_Venta";
+        PreparedStatement getMaxNumeroStatement = sqlServerConnection.getConexion().prepareStatement(getMaxNumeroQuery);
+
+        ResultSet resultSet = getMaxNumeroStatement.executeQuery();
+        double numeroCorriente = 1;
+
+        if (resultSet.next()) {
+            double maxNumero = resultSet.getDouble("MaxNumero");
+            numeroCorriente = maxNumero + 1;
+        }
+
+        resultSet.close();
+        getMaxNumeroStatement.close();
+        return (int) numeroCorriente;
+    }
+
+
     public int borrarTicket(int ticketID) {
         int columnasBorradas=0;
         if (sqlServerConnection.getConexion() != null) {
@@ -145,6 +166,43 @@ public class TicketBD {
             }
         }
         return columnasBorradas;
+    }
+
+    //Borra todos los detalles de un ticket con su id
+    public void borrarDetalles(int ticketID){
+        if (sqlServerConnection.getConexion() != null) {
+            try {
+                String insertQuery = "DELETE FROM Detalle_Documentos_Venta WHERE cabecera_id = ?";
+                PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery);
+                insertStatement.setInt(1,ticketID);
+                insertStatement.executeUpdate();
+                insertStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //Añade todas las lineas de detalles de un ticket
+    public void actualizarTicket(List<DetalleDocumento> detalles, int ticketID){
+        if (sqlServerConnection.getConexion() != null) {
+            try {
+                String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea) VALUES ";
+                for (DetalleDocumento detalle:detalles) {
+                    String detalleEscrito="("+ticketID+", "+detalle.getArticuloID()+", "+detalle.getCantidad()+", "+"'"+detalle.getDescripcion()+"'"+", "+"'"+detalle.getDescripcionLarga()+"'"+", "+detalle.getPrecio()+", "+detalle.getCuotaIva()+", "+detalle.getTotalLinea()+") ,";
+                    System.out.println(detalleEscrito);
+                    insertQuery=insertQuery + detalleEscrito;
+                }
+                insertQuery=insertQuery.substring(0,insertQuery.length()-1);
+                insertQuery=insertQuery+";";
+                System.out.println(insertQuery);
+                PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery);
+                insertStatement.executeUpdate();
+                insertStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -287,22 +345,7 @@ public class TicketBD {
         return newRowId;
     }
 
-    public int incrementarNumero() throws SQLException {
-        String getMaxNumeroQuery = "SELECT MAX(Numero) AS MaxNumero FROM Cabecera_Documentos_Venta";
-        PreparedStatement getMaxNumeroStatement = sqlServerConnection.getConexion().prepareStatement(getMaxNumeroQuery);
 
-        ResultSet resultSet = getMaxNumeroStatement.executeQuery();
-        double numeroCorriente = 1;
-
-        if (resultSet.next()) {
-            double maxNumero = resultSet.getDouble("MaxNumero");
-            numeroCorriente = maxNumero + 1;
-        }
-
-        resultSet.close();
-        getMaxNumeroStatement.close();
-        return (int) numeroCorriente;
-    }
 
     public List<DetalleDocumento> getDescripcionesLargasByCabeceraId(long cabeceraId) {
         List<DetalleDocumento> detalles = new ArrayList<>();
