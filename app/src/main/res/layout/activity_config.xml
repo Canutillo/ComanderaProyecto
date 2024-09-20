@@ -17,7 +17,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintVertical_bias="0.0" />
 
@@ -27,12 +26,12 @@
         android:layout_height="wrap_content"
         android:text="Seleccione dispositivo"
         android:textSize="20sp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvConfig"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/spinner"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintVertical_bias="0.2"/>
+        app:layout_constraintVertical_bias="0"/>
 
     <Spinner
         android:id="@+id/spinner"
@@ -43,12 +42,12 @@
         android:paddingRight="40dp"
         android:paddingBottom="10dp"
         android:background="@drawable/spinner_background"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/button"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintVertical_bias="0.4" />
+        app:layout_constraintVertical_bias="0" />
 
 
     <Button
@@ -57,12 +56,12 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#D72E387A"
         android:text="OK"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spinner"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintVertical_bias="0"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,20 +1,25 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="0dp"
-    android:padding="2dp">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp">
 
+    <!--el tamaño se maneja en el adapter-->
     <TextView
         android:id="@+id/textViewZona"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintDimensionRatio="1:1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="0dp"
         android:background="@drawable/borde_redondo"
         android:backgroundTint="#AE69D0FF"
-        android:gravity="center"
         android:text="Zona"
+        android:textAlignment="center"
+        android:gravity="center"
         android:textColor="#6E6D6D"
-        android:textSize="18dp" />
+        android:textSize="18sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

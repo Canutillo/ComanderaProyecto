@@ -37,10 +37,14 @@ public class ZonasAdapter extends RecyclerView.Adapter<ZonasAdapter.ZonaViewHold
     @Override
     public void onBindViewHolder(@NonNull ZonaViewHolder holder, int position) {
         int screenWidth = holder.itemView.getContext().getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = holder.itemView.getContext().getResources().getDisplayMetrics().heightPixels;
 
-        // Establecer el ancho del ítem al 25% del ancho de la pantalla
+// Establecer el ancho del ítem al 25% del ancho de la pantalla
         ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
-        params.width = (int) (screenWidth * 0.25);  // 25% del ancho de la pantalla
+        params.width = (int) (screenWidth * 0.23);  // 23% del ancho de la pantalla
+
+// Establecer el alto del ítem al 25% del alto de la pantalla
+        params.height = (int) (screenHeight * 0.15);  // 15% del alto de la pantalla
         holder.itemView.setLayoutParams(params);
         ZonaVenta zona = zonas.get(position);
         holder.bind(zona,position, listener);
