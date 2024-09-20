@@ -34,6 +34,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
 
     @Override
     public void onBindViewHolder(@NonNull TicketViewHolder holder, int position) {
+
         DetalleDocumento detalle = detalles.get(position);
         holder.tvUd.setText(String.valueOf(detalle.getCantidad()));
         holder.tvDescripcionLarga.setText(detalle.getDescripcionLarga());

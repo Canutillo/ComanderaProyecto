@@ -8,7 +8,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="8dp"
+        android:weightSum="1">
 
 
         <LinearLayout
@@ -18,8 +19,9 @@
 
             <TextView
                 android:id="@+id/tvUd"
-                android:layout_width="57dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="Ud"
@@ -28,8 +30,9 @@
 
             <TextView
                 android:id="@+id/tvDescripcionLarga"
-                android:layout_width="159dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="Articulo"
@@ -38,8 +41,9 @@
 
             <TextView
                 android:id="@+id/tvPVP"
-                android:layout_width="78dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="PVP"
@@ -48,8 +52,9 @@
 
             <TextView
                 android:id="@+id/tvTotal"
-                android:layout_width="78dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="0.25"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="€"

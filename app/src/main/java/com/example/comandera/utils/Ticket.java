@@ -96,7 +96,7 @@ public class Ticket implements Parcelable {
         if(descripcion_larga.equals("")){
             descLarga=articulo.getNombre();
         }else{
-            descLarga=articulo.getNombre()+" || "+descripcion_larga;
+            descLarga=articulo.getNombre()+"\n"+descripcion_larga;
         }
         detalle.setDescripcionLarga(descLarga);
         detalle.setDescripcionLarga(descLarga);
