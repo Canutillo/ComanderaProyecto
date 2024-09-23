@@ -139,6 +139,22 @@ public class Ticket implements Parcelable {
         System.out.println(detalle.toString());
     }
 
+    public void anadirUnidad(int posicionLista){
+        this.detallesTicket.get(posicionLista).setCantidad(this.detallesTicket.get(posicionLista).getCantidad()+1);
+        this.detallesTicket.get(posicionLista).setTotalLinea(this.detallesTicket.get(posicionLista).getTotalLinea().doubleValue()+this.detallesTicket.get(posicionLista).getPvp().doubleValue());
+
+    }
+
+    public void quitarUnidad(int posicionLista){
+        if(this.detallesTicket.get(posicionLista).getCantidad()<=1){
+            this.detallesTicket.remove(posicionLista);
+        }else{
+            this.detallesTicket.get(posicionLista).setCantidad(this.detallesTicket.get(posicionLista).getCantidad()-1);
+            this.detallesTicket.get(posicionLista).setTotalLinea(this.detallesTicket.get(posicionLista).getTotalLinea().doubleValue()-this.detallesTicket.get(posicionLista).getPvp().doubleValue());
+        }
+    }
+
+
     @Override
     public String toString() {
         return nuevo+" || "+
@@ -150,7 +166,7 @@ public class Ticket implements Parcelable {
                 serieId + " || " +
                 (detallesTicket != null ? detallesTicket.toString() : "null");
     }
-    //BORRAR DESDE AQUI
+    //Esta implementacion no es usada DE MOMENTO
     // Parcelable implementation
     protected Ticket(Parcel in) {
         estadoDocumento = in.readInt();
@@ -183,5 +199,4 @@ public class Ticket implements Parcelable {
         parcel.writeDouble(numero);
         parcel.writeDouble(serieId);
     }
-    //BORRAR HASTA AQUI
 }

@@ -39,7 +39,7 @@
             android:text="Familias y Categorías"
             android:textSize="26sp" />
 
-        <Button
+<!--        <Button
             android:id="@+id/salir"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
             app:backgroundTint="#00D3D1D1"
             app:icon="@drawable/salida"
             app:iconSize="30dp"
-            app:iconTint="#575656" />
+            app:iconTint="#575656" />-->
 
     </LinearLayout>
 
@@ -72,13 +72,13 @@
         app:layout_constraintTop_toBottomOf="@id/recyclerViewArticulos"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/volver"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
         android:scrollbars="vertical"
         android:fadeScrollbars="false"       />
 
-    <com.google.android.material.button.MaterialButton
+<!--    <com.google.android.material.button.MaterialButton
         android:id="@+id/volver"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -88,7 +88,7 @@
         app:icon="@drawable/volver"
         app:iconTint="#575656"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

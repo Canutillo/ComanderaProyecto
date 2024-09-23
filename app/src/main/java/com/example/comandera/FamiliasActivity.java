@@ -1,9 +1,12 @@
 package com.example.comandera;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -15,10 +18,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.comandera.adapters.AnadirInterface;
 import com.example.comandera.adapters.FamiliasAdapter;
 import com.example.comandera.adapters.TicketAdapter;
 import com.example.comandera.data.FamiliasBD;
@@ -32,7 +37,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.List;
 
-public class FamiliasActivity extends AppCompatActivity {
+public class FamiliasActivity extends AppCompatActivity implements AnadirInterface {
     VariablesGlobales varGlob;
     RecyclerView recyclerViewFamilias, recyclerTicket;
     TextView tvUser;
@@ -52,6 +57,7 @@ public class FamiliasActivity extends AppCompatActivity {
         });
         varGlob=(VariablesGlobales) getApplicationContext();
         LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter("com.example.comandera.UPDATE_FAMILIAS"));
+
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
@@ -76,37 +82,87 @@ public class FamiliasActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                new ActualizaDetalles().execute();
+                if(varGlob.getTicketActual().getDetallesTicket().isEmpty()){
+                    new BorraTicket().execute();
+                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else{
+                    new ActualizaDetalles().execute();
+                }
             }
         });
     }
+    //Trato del boton de añadir
+    @Override
+    public void onButton1Click(int position) {
+        varGlob.getTicketActual().anadirUnidad(position);
+        cargaTicket();
+    }
+
+    //Trato del boton de quitar
+    @Override
+    public void onButton2Click(int position) {
+        varGlob.getTicketActual().quitarUnidad(position);
+        cargaTicket();
+    }
+
 
     //NUEVO METODO PARA PINTAR EL TICKET
     public void cargaTicket(){
         if (varGlob.getTicketActual().getDetallesTicket() != null && !varGlob.getTicketActual().getDetallesTicket().isEmpty()) {
             if (ticketAdapter == null) {
-                ticketAdapter = new TicketAdapter(FamiliasActivity.this, varGlob.getTicketActual().getDetallesTicket());
+                ticketAdapter = new TicketAdapter(FamiliasActivity.this, varGlob.getTicketActual().getDetallesTicket(),this);
                 recyclerTicket.setAdapter(ticketAdapter);
             } else {
                 ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
             }
         } else {
-            //Toast.makeText(FamiliasActivity.this, "Ticket vacio.", Toast.LENGTH_SHORT).show();
+            if (ticketAdapter == null) {
+                ticketAdapter = new TicketAdapter(FamiliasActivity.this, varGlob.getTicketActual().getDetallesTicket(),this);
+                recyclerTicket.setAdapter(ticketAdapter);
+            } else {
+                ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
+            }
         }
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        //super.onBackPressed();
+        //Si el ticket tiene algo te pregunta guardar o no y sale, si el ticket esta vacio lo borra y sale
         if(varGlob.getTicketActual().getDetallesTicket().isEmpty()){
             new BorraTicket().execute();
             Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
             startActivity(intent);
             finish();
         }else{
-            Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
-            startActivity(intent);
-            finish();
+            AlertDialog.Builder builder = new AlertDialog.Builder(FamiliasActivity.this);
+            builder.setTitle("¿Desea guardar el ticket?");
+            builder.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    new ActualizaDetalles().execute();
+                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+            builder.setNegativeButton("No guardar", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+            builder.setNeutralButton("Cancelar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+            builder.setCancelable(false);
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }//CONTROLAR QUE SE GUARDE EL TICKET TAMBIEN
     }
 
@@ -126,6 +182,8 @@ public class FamiliasActivity extends AppCompatActivity {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
     }
+
+
 
 
     private class GetVisibleFamilias extends AsyncTask<Integer, Void, List<Familia>> {
@@ -194,7 +252,9 @@ public class FamiliasActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            onBackPressed();
+            Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 }

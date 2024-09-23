@@ -38,7 +38,7 @@
             android:text="Familias y Categorías"
             android:textSize="26sp" />
 
-        <Button
+<!--        <Button
             android:id="@+id/salir"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
             app:backgroundTint="#00D3D1D1"
             app:icon="@drawable/salida"
             app:iconSize="30dp"
-            app:iconTint="#575656" />
+            app:iconTint="#575656" />-->
 
     </LinearLayout>
 

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.comandera.adapters.AnadirInterface;
 import com.example.comandera.adapters.ArticulosAdapter;
 import com.example.comandera.adapters.OpcionesAdapter;
 import com.example.comandera.adapters.TicketAdapter;
@@ -33,13 +34,12 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArticulosActivity extends AppCompatActivity {
+public class ArticulosActivity extends AppCompatActivity implements AnadirInterface {
     VariablesGlobales varGlob;
     RecyclerView recyclerViewArticulos, recyclerTicket;
     TextView tvText, tvUser;
     private Ticket existingTicket;
     TicketAdapter ticketAdapter;
-
 
 
     @Override
@@ -51,7 +51,7 @@ public class ArticulosActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        varGlob=(VariablesGlobales) getApplicationContext();
+        varGlob = (VariablesGlobales) getApplicationContext();
 
         System.out.println("Articulos");
         tvUser = findViewById(R.id.tvUser);
@@ -65,9 +65,9 @@ public class ArticulosActivity extends AppCompatActivity {
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
 
         if (varGlob.getUsuarioActual() != null) {
-            tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp()+"/  "+varGlob.getMesaActual().getNombre());
+            tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp() + "/  " + varGlob.getMesaActual().getNombre());
         }
-        if(varGlob.getFamiliaActual().getNombre() != null){
+        if (varGlob.getFamiliaActual().getNombre() != null) {
             tvText.setText(varGlob.getFamiliaActual().getNombre());
         }
 
@@ -75,17 +75,37 @@ public class ArticulosActivity extends AppCompatActivity {
         cargaTicket();
     }
 
+    //Trato del boton de añadir
+    @Override
+    public void onButton1Click(int position) {
+        varGlob.getTicketActual().anadirUnidad(position);
+        cargaTicket();
+    }
+
+    //Trato del boton de quitar
+    @Override
+    public void onButton2Click(int position) {
+        varGlob.getTicketActual().quitarUnidad(position);
+        cargaTicket();
+    }
+
+
     //METODO PARA MOSTRAR LOS DETALLES DEL TICKET
-    public void cargaTicket(){
+    public void cargaTicket() {
         if (varGlob.getTicketActual().getDetallesTicket() != null && !varGlob.getTicketActual().getDetallesTicket().isEmpty()) {
             if (ticketAdapter == null) {
-                ticketAdapter = new TicketAdapter(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket());
+                ticketAdapter = new TicketAdapter(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket(), this);
                 recyclerTicket.setAdapter(ticketAdapter);
             } else {
                 ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
             }
         } else {
-            Toast.makeText(ArticulosActivity.this, "Ticket vacio.", Toast.LENGTH_SHORT).show();
+            if (ticketAdapter == null) {
+                ticketAdapter = new TicketAdapter(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket(),this);
+                recyclerTicket.setAdapter(ticketAdapter);
+            } else {
+                ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
+            }
         }
         updateFamiliasActivity();
     }
@@ -94,6 +114,7 @@ public class ArticulosActivity extends AppCompatActivity {
         Intent intent = new Intent("com.example.comandera.UPDATE_FAMILIAS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
+
 
     //OBTIENE LOS ARTICULOS Y GESTIONA EL ONCLICK
     private class GetArticulos extends AsyncTask<Integer, Void, List<Articulo>> {
@@ -135,8 +156,8 @@ public class ArticulosActivity extends AppCompatActivity {
                 showPreguntaDialog(preguntas, 0, new ArrayList<>());
             } else {
                 //AÑADIR PRODUCTOS SIN PREGUNTAS
-                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(),varGlob.getTiposIVA(),varGlob.getTarifasDeVentas(),"",varGlob.getZonaActual().getIdTarifaVenta());
-                Toast.makeText(ArticulosActivity.this,varGlob.getTicketActual().getDetallesTicket().toString(),Toast.LENGTH_LONG).show();
+                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta());
+                Toast.makeText(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket().toString(), Toast.LENGTH_LONG).show();
                 cargaTicket();
             }
         }
@@ -187,21 +208,21 @@ public class ArticulosActivity extends AppCompatActivity {
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
                             } else {
                                 //AÑADIR PRODUCTOS CON PREGUNTAS
-                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(),varGlob.getTiposIVA(),varGlob.getTarifasDeVentas(),opcionesSeleccionadas.toString(),varGlob.getZonaActual().getIdTarifaVenta());
+                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta());
                                 cargaTicket();
                             }
                         });
-                if(index>0){
+                if (index > 0) {
                     builder.setNegativeButton("Anterior", (dialog, which) -> {
                         dialog.dismiss();
                         if (index > 0) {
                             showPreguntaDialog(preguntas, index - 1, opcionesSeleccionadas);
-                        }else{
+                        } else {
                             dialog.dismiss();
                         }
                     });
                 }
-                        builder.setCancelable(false)
+                builder.setCancelable(false)
                         .show();
             } else {
                 Toast.makeText(ArticulosActivity.this, "No se encontraron opciones para esta pregunta", Toast.LENGTH_SHORT).show();
@@ -216,162 +237,4 @@ public class ArticulosActivity extends AppCompatActivity {
 
 
 
-    //NO SE USA
-    private class AddArticuloToTicketTask extends AsyncTask<Articulo, Void, Ticket> {
-        @Override
-        protected Ticket doInBackground(Articulo... params) {
-            Articulo articulo = params[0];
-            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-
-            if (existingTicket == null) {
-                throw new IllegalStateException("No existe un ticket para agregar artículos.");
-            }
-            ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), varGlob.getZonaActual().getId());
-
-            return existingTicket;
-        }
-
-        @Override
-        protected void onPostExecute(Ticket ticket) {
-            existingTicket = ticket;
-            //actualizar la interfaz del ticket cuando añado un articulo
-            /*new LoadDescripcionesLargasTask().execute(existingTicket.getId());*/
-            new GetPreguntas().execute(varGlob.getArticuloActual().getId());
-            /*updateFamiliasActivity();*/
-        }
-    }
-
-
-
-    //NO SE USA
-    private class CreateTicketTask extends AsyncTask<Void, Void, Ticket> {
-        private Articulo articulo;
-
-        public CreateTicketTask(Articulo articulo) {
-            this.articulo = articulo;
-        }
-
-        @Override
-        protected Ticket doInBackground(Void... voids) {
-            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-
-            // Crear un nuevo ticket
-            //long newTicketId = ticketBD.createNewTicket(1 /*Ver lo de las series en el futuro*/, varGlob.getSeccionIdUsuariosActual(), varGlob.getIdDispositivoActual(), varGlob.getMesaActual().getId(), varGlob.getUsuarioActual().getId(), varGlob.getTicketActual().getComensales(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre());
-            existingTicket = ticketBD.getTicketForMesa(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
-
-            if (existingTicket != null) {
-                // Agregar el artículo al ticket recién creado
-                ticketBD.addDetalleDocumentoVenta(existingTicket.getId(), articulo.getId(), 1, articulo.getNombre(), articulo.getNombre(), varGlob.getZonaActual().getId());
-            }
-
-            return existingTicket;
-        }
-
-        @Override
-        protected void onPostExecute(Ticket ticket) {
-            existingTicket = ticket;
-
-            /*if (existingTicket != null) {
-                // Actualizar la interfaz para mostrar el nuevo artículo en el ticket
-                new LoadDescripcionesLargasTask().execute(existingTicket.getId());
-                updateFamiliasActivity();
-            }*/
-
-            // Cargar y mostrar preguntas asociadas al artículo
-            new GetPreguntas().execute(articulo.getId());
-            /*updateFamiliasActivity();*/
-        }
-    }
-
-
-    //comprobar si ya existe un ticket, si ya existe te devuelve el ticket
-    private class GetTicketTask extends AsyncTask<Void, Void, Ticket> {
-        private int mesaId;
-        private int dispositivoId;
-        private int seccionId;
-
-        public GetTicketTask(int mesaId, int dispositivoId, int seccionId) {
-            this.mesaId = mesaId;
-            this.dispositivoId = dispositivoId;
-            this.seccionId = seccionId;
-        }
-
-        @Override
-        protected Ticket doInBackground(Void... voids) {
-            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-            return ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
-        }
-
-        @Override
-        protected void onPostExecute(Ticket ticket) {
-            existingTicket = ticket;
-
-            if (existingTicket == null) {
-                // Si no existe un ticket, crear uno y añadir el artículo
-                new CreateTicketTask(varGlob.getArticuloActual()).execute();
-            } else {
-                // Si el ticket ya existe, agregar el artículo al ticket existente
-                new AddArticuloToTicketTask().execute(varGlob.getArticuloActual());
-            }
-        }
-    }
-
-    //NO USADO
-
-    //apartir de aqui los task son para mostrar los articulos en el ticket
-    private class LoadDescripcionesLargasTask extends AsyncTask<Integer, Void, List<DetalleDocumento>> {
-        @Override
-        protected List<DetalleDocumento> doInBackground(Integer... params) {
-            int cabeceraId = params[0];
-            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-            return ticketBD.getDescripcionesLargasByCabeceraId(cabeceraId);
-        }
-
-        @Override
-        protected void onPostExecute(List<DetalleDocumento> detalles) {
-            if (detalles != null && !detalles.isEmpty()) {
-                if (ticketAdapter == null) {
-                    ticketAdapter = new TicketAdapter(ArticulosActivity.this, detalles);
-                    recyclerTicket.setAdapter(ticketAdapter);
-                } else {
-                    ticketAdapter.updateData(detalles);
-                }
-            } else {
-                Toast.makeText(ArticulosActivity.this, "No se encontraron detalles del documento.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-
-    private void loadAndDisplayDescriptions() {
-        new LoadTicketAndDescriptionsTask().execute(varGlob.getMesaActual().getId(), varGlob.getIdDispositivoActual(), varGlob.getSeccionIdUsuariosActual());
-    }
-
-    //NO USADO
-    private class LoadTicketAndDescriptionsTask extends AsyncTask<Integer, Void, Ticket> {
-        @Override
-        protected Ticket doInBackground(Integer... params) {
-            int mesaId = params[0];
-            int dispositivoId = params[1];
-            int seccionId = params[2];
-
-            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-            Ticket ticket = ticketBD.getTicketForMesa(mesaId, dispositivoId, seccionId);
-
-
-            return ticket;
-        }
-
-        @Override
-        protected void onPostExecute(Ticket ticket) {
-            if (ticket != null) {
-                if (varGlob.getTicketActual().getId() > 0) {
-                    new ArticulosActivity.LoadDescripcionesLargasTask().execute(varGlob.getTicketActual().getId());
-                } else {
-                    Toast.makeText(ArticulosActivity.this, "Error: Cabecera ID inválido.", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-            }
-        }
-    }
 }

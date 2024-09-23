@@ -13,51 +13,72 @@
         android:background="#3F51B5"
         android:backgroundTint="#3F51B5"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:weightSum="1">
 
         <TextView
             android:id="@+id/tvUd"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
+            android:layout_weight="0.12"
             android:gravity="center"
             android:padding="8dp"
             android:text="Uds"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:textAlignment="center"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="24sp"
+            android:autoSizeStepGranularity="1sp"
+            android:ellipsize="end"
+            android:textColor="@android:color/white"/>
 
         <TextView
             android:id="@+id/tvArticulo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
+            android:layout_weight="0.38"
             android:gravity="center"
             android:padding="8dp"
             android:text="Articulo"
+            android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="24sp"
+            android:autoSizeStepGranularity="1sp"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/tvPVP"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
+            android:layout_weight="0.15"
             android:gravity="center"
             android:padding="8dp"
             android:text="PVP"
+            android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="24sp"
+            android:autoSizeStepGranularity="1sp"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/tvTotal"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
+            android:layout_weight="0.15"
             android:gravity="center"
             android:padding="8dp"
             android:text="€"
+            android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="24sp"
+            android:autoSizeStepGranularity="1sp"
+            android:ellipsize="end" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

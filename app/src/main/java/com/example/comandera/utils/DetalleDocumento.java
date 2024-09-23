@@ -13,6 +13,7 @@ public class DetalleDocumento {
     private double precio;
     private double iva;
     private double cuotaIva;
+    private int ordenPreparacion;
 
     public DetalleDocumento() {
     }
@@ -104,6 +105,14 @@ public class DetalleDocumento {
 
     public void setCuotaIva(double cuotaIva) {
         this.cuotaIva = cuotaIva;
+    }
+
+    public int getOrdenPreparacion() {
+        return ordenPreparacion;
+    }
+
+    public void setOrdenPreparacion(int ordenPreparacion) {
+        this.ordenPreparacion = ordenPreparacion;
     }
 
     @Override
