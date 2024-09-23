@@ -45,6 +45,26 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         holder.tvDescripcionLarga.setText(detalle.getDescripcionLarga());
         holder.tvPVP.setText(String.valueOf(detalle.getPvp()));
         holder.tvTotal.setText(String.valueOf(detalle.getTotalLinea()));
+        String resultado;
+        int valor=detalle.getOrdenPreparacion();
+        switch (valor) {
+            case 1:
+                resultado = "BEB";
+                break;
+            case 2:
+                resultado = "1º";
+                break;
+            case 3:
+                resultado = "2º";
+                break;
+            case 4:
+                resultado = "POS";
+                break;
+            default:
+                resultado = "SO";
+                break;
+        }
+        holder.ordenPreparacion.setText(resultado);
         holder.anadir.setOnClickListener(v -> anadirBoton.onButton1Click(position));
         holder.quitar.setOnClickListener(v -> anadirBoton.onButton2Click(position));
     }
@@ -60,7 +80,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
     }
 
     public static class TicketViewHolder extends RecyclerView.ViewHolder {
-        TextView tvUd, tvDescripcionLarga, tvPVP, tvTotal;
+        TextView tvUd, tvDescripcionLarga, tvPVP, tvTotal,ordenPreparacion;
         ImageButton anadir,quitar;
 
         public TicketViewHolder(@NonNull View itemView,final AnadirInterface anadirInterface) {
@@ -69,6 +89,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
             tvDescripcionLarga = itemView.findViewById(R.id.tvDescripcionLarga);
             tvPVP = itemView.findViewById(R.id.tvPVP);
             tvTotal = itemView.findViewById(R.id.tvTotal);
+            ordenPreparacion=itemView.findViewById(R.id.tvOrdenPreparacion);
             anadir=itemView.findViewById(R.id.botonAnadir);
             quitar=itemView.findViewById(R.id.botonQuitar);
 

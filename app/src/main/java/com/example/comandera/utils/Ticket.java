@@ -88,9 +88,10 @@ public class Ticket implements Parcelable {
     }
 
 
-    public void anadirDetalleDocumentoVenta(Articulo articulo,List<TipoIVA> tiposDeIVA,List <TarifasDeVenta> tarifasDeVentas,String descripcion_larga,int idTarifaVenta ){
+    public void anadirDetalleDocumentoVenta(Articulo articulo,List<TipoIVA> tiposDeIVA,List <TarifasDeVenta> tarifasDeVentas,String descripcion_larga,int idTarifaVenta,int ordenPreparacion ){
         DetalleDocumento detalle=new DetalleDocumento();
         detalle.setArticuloID(articulo.getId());
+        detalle.setOrdenPreparacion(ordenPreparacion);
         detalle.setDescripcion(articulo.getNombre());
         String descLarga;
         if(descripcion_larga.equals("")){
@@ -122,7 +123,7 @@ public class Ticket implements Parcelable {
         //Controlar cantidad
         Boolean anadir=true;
         for (DetalleDocumento detalleLista : this.getDetallesTicket()) {
-            if (detalleLista.getDescripcionLarga().equals(detalle.getDescripcionLarga())) {
+            if (detalleLista.getDescripcionLarga().equals(detalle.getDescripcionLarga()) && detalleLista.getOrdenPreparacion()==ordenPreparacion) {
                 detalleLista.setCantidad(detalleLista.getCantidad() + 1);
                 detalleLista.setTotalLinea(detalleLista.getTotalLinea().doubleValue()+tarifa*(1+iva));
                 anadir=false;

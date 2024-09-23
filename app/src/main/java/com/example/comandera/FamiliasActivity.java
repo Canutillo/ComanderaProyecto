@@ -8,8 +8,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +46,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
     TextView tvUser;
     TicketAdapter ticketAdapter;
     ImageButton botonGuardar;
+    Spinner ordenPreparacion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,27 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         varGlob=(VariablesGlobales) getApplicationContext();
         LocalBroadcastManager.getInstance(this).registerReceiver(updateReceiver, new IntentFilter("com.example.comandera.UPDATE_FAMILIAS"));
 
+
+        ordenPreparacion = findViewById(R.id.ordenPreparacion);
+
+        // Elementos del spinner
+        String[] items = {"Sin orden","Bebidas", "Primeros", "Segundos", "Postres"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ordenPreparacion.setAdapter(adapter);
+        ordenPreparacion.setSelection(varGlob.getOrdenPreparacionActual());
+        ordenPreparacion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                varGlob.setOrdenPreparacionActual(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+
+        });
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
@@ -93,6 +118,12 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             }
         });
     }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        ordenPreparacion.setSelection(varGlob.getOrdenPreparacionActual());
+    }
     //Trato del boton de añadir
     @Override
     public void onButton1Click(int position) {
@@ -106,6 +137,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         varGlob.getTicketActual().quitarUnidad(position);
         cargaTicket();
     }
+
 
 
     //NUEVO METODO PARA PINTAR EL TICKET

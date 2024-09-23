@@ -48,8 +48,7 @@ public class MesasActivity extends AppCompatActivity {
             return insets;
         });
         varGlob=(VariablesGlobales) getApplicationContext();
-        //Toast.makeText(MesasActivity.this,varGlob.getTiposIVA().toString(),Toast.LENGTH_LONG).show();
-
+        varGlob.setOrdenPreparacionActual(0);
         tvUser = findViewById(R.id.tvUser);
         recyclerViewZonas = findViewById(R.id.recyclerViewZonas);
         recyclerViewMesas = findViewById(R.id.recyclerViewMesas);

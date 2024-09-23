@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +35,7 @@ import com.example.comandera.utils.Ticket;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ArticulosActivity extends AppCompatActivity implements AnadirInterface {
@@ -40,6 +44,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
     TextView tvText, tvUser;
     private Ticket existingTicket;
     TicketAdapter ticketAdapter;
+    Spinner ordenPreparacion;
 
 
     @Override
@@ -53,6 +58,26 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         });
         varGlob = (VariablesGlobales) getApplicationContext();
 
+        ordenPreparacion = findViewById(R.id.ordenPreparacion);
+
+        // Elementos del spinner
+        String[] items = {"Sin orden","Bebidas", "Primeros", "Segundos", "Postres"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ordenPreparacion.setAdapter(adapter);
+        ordenPreparacion.setSelection(varGlob.getOrdenPreparacionActual());
+        ordenPreparacion.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                varGlob.setOrdenPreparacionActual(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+
+        });
         System.out.println("Articulos");
         tvUser = findViewById(R.id.tvUser);
         tvText = findViewById(R.id.tvText);
@@ -90,8 +115,12 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
     }
 
 
+
+
+
     //METODO PARA MOSTRAR LOS DETALLES DEL TICKET
     public void cargaTicket() {
+        varGlob.getTicketActual().getDetallesTicket().sort(Comparator.comparingInt(DetalleDocumento::getOrdenPreparacion));
         if (varGlob.getTicketActual().getDetallesTicket() != null && !varGlob.getTicketActual().getDetallesTicket().isEmpty()) {
             if (ticketAdapter == null) {
                 ticketAdapter = new TicketAdapter(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket(), this);
@@ -116,7 +145,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
     }
 
 
-    //OBTIENE LOS ARTICULOS Y GESTIONA EL ONCLICK
+    //OBTIENE LOS ARTICULOS Y GESTIONA EL ONCLICK del recycler view de los articulos
     private class GetArticulos extends AsyncTask<Integer, Void, List<Articulo>> {
         @Override
         protected List<Articulo> doInBackground(Integer... params) {
@@ -156,8 +185,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                 showPreguntaDialog(preguntas, 0, new ArrayList<>());
             } else {
                 //AÑADIR PRODUCTOS SIN PREGUNTAS
-                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta());
-                Toast.makeText(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket().toString(), Toast.LENGTH_LONG).show();
+                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual());
                 cargaTicket();
             }
         }
@@ -208,7 +236,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
                             } else {
                                 //AÑADIR PRODUCTOS CON PREGUNTAS
-                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta());
+                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual());
                                 cargaTicket();
                             }
                         });

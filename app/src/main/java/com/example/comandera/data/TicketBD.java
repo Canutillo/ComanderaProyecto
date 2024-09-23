@@ -59,7 +59,7 @@ public class TicketBD {
     public void cargarDetallesEnTicket(Ticket ticket,Context context){
         if (ticket!=null){
             if (sqlServerConnection.getConexion() != null) {
-                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, precio, total_linea, cuota_iva FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
+                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, precio, total_linea, cuota_iva,Orden_preparacion FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
                 try {
                     PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                     statement.setInt(1, ticket.getId());
@@ -76,6 +76,7 @@ public class TicketBD {
                         detalle.setPrecio(resultSet.getDouble("precio"));
                         detalle.setCuotaIva(resultSet.getDouble("cuota_iva"));
                         detalle.setPvp(resultSet.getDouble("precio")+resultSet.getDouble("cuota_iva"));
+                        detalle.setOrdenPreparacion(resultSet.getInt("Orden_preparacion"));
                         ticket.getDetallesTicket().add(detalle);
                     }
                     resultSet.close();
@@ -187,9 +188,9 @@ public class TicketBD {
     public void actualizarTicket(List<DetalleDocumento> detalles, int ticketID){
         if (sqlServerConnection.getConexion() != null) {
             try {
-                String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea) VALUES ";
+                String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea, Orden_preparacion) VALUES ";
                 for (DetalleDocumento detalle:detalles) {
-                    String detalleEscrito="("+ticketID+", "+detalle.getArticuloID()+", "+detalle.getCantidad()+", "+"'"+detalle.getDescripcion()+"'"+", "+"'"+detalle.getDescripcionLarga()+"'"+", "+detalle.getPrecio()+", "+detalle.getCuotaIva()+", "+detalle.getTotalLinea()+") ,";
+                    String detalleEscrito="("+ticketID+", "+detalle.getArticuloID()+", "+detalle.getCantidad()+", "+"'"+detalle.getDescripcion()+"'"+", "+"'"+detalle.getDescripcionLarga()+"'"+", "+detalle.getPrecio()+", "+detalle.getCuotaIva()+", "+detalle.getTotalLinea()+", "+detalle.getOrdenPreparacion()+") ,";
                     System.out.println(detalleEscrito);
                     insertQuery=insertQuery + detalleEscrito;
                 }

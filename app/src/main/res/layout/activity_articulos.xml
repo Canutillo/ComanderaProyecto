@@ -26,18 +26,34 @@
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/tvUser"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:weightSum="1">
+
+
 
         <TextView
             android:id="@+id/tvText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="0.8"
             android:freezesText="true"
             android:paddingLeft="10dp"
             android:paddingTop="5dp"
             android:text="Familias y Categorías"
-            android:textSize="26sp" />
+            android:textSize="26sp"
+            />
+
+        <Spinner
+            android:id="@+id/ordenPreparacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"
+            android:textAlignment="center"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="11sp"
+            android:autoSizeMaxTextSize="24sp"
+            android:autoSizeStepGranularity="1sp"
+            android:ellipsize="end"/>
 
 <!--        <Button
             android:id="@+id/salir"

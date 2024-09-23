@@ -29,6 +29,7 @@ public class VariablesGlobales extends Application {
     private Articulo articuloActual;
     private List<TipoIVA> tiposIVA;
     private List<TarifasDeVenta> tarifasDeVentas;
+    private int ordenPreparacionActual;
 
 
 
@@ -142,5 +143,13 @@ public class VariablesGlobales extends Application {
 
     public void setTarifasDeVentas(List<TarifasDeVenta> tarifasDeVentas) {
         this.tarifasDeVentas = tarifasDeVentas;
+    }
+
+    public int getOrdenPreparacionActual() {
+        return ordenPreparacionActual;
+    }
+
+    public void setOrdenPreparacionActual(int ordenPreparacionActual) {
+        this.ordenPreparacionActual = ordenPreparacionActual;
     }
 }
