@@ -50,6 +50,17 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
 
     @Override
     public void onBindViewHolder(@NonNull FamiliaViewHolder holder, int position) {
+        int screenWidth = holder.itemView.getContext().getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = holder.itemView.getContext().getResources().getDisplayMetrics().heightPixels;
+
+// Establecer el ancho del ítem al 25% del ancho de la pantalla
+        ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+        params.width = (int) (screenWidth * 0.22);  // 22% del ancho de la pantalla
+
+// Establecer el alto del ítem al 25% del alto de la pantalla
+        params.height = (int) (screenHeight * 0.15);  // 15% del alto de la pantalla
+
+        holder.itemView.setLayoutParams(params);
         Familia familia = familias.get(position);
         holder.familiaNombre.setText(familia.getNombre());
 

@@ -137,6 +137,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             }
         }
         updateFamiliasActivity();
+        recyclerTicket.scrollToPosition(ticketAdapter.getItemCount()-1);
     }
 
     private void updateFamiliasActivity() {

@@ -148,6 +148,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                 recyclerTicket.setAdapter(ticketAdapter);
             } else {
                 ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
+
             }
         } else {
             if (ticketAdapter == null) {
@@ -157,6 +158,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                 ticketAdapter.updateData(varGlob.getTicketActual().getDetallesTicket());
             }
         }
+        recyclerTicket.scrollToPosition(ticketAdapter.getItemCount()-1);
     }
 
     @Override

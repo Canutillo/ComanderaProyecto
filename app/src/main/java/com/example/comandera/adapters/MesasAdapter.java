@@ -1,5 +1,7 @@
 package com.example.comandera.adapters;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,13 +42,31 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
 
 // Establecer el ancho del ítem al 25% del ancho de la pantalla
         ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
-        params.width = (int) (screenWidth * 0.22);  // 25% del ancho de la pantalla
+        params.width = (int) (screenWidth * 0.22);  // 22% del ancho de la pantalla
 
 // Establecer el alto del ítem al 25% del alto de la pantalla
-        params.height = (int) (screenHeight * 0.15);  // 25% del alto de la pantalla
+        params.height = (int) (screenHeight * 0.15);  // 15% del alto de la pantalla
 
         holder.itemView.setLayoutParams(params);
         Mesa mesa = mesas.get(position);
+        int valor=mesa.getEstado();
+        switch (valor) {
+            case 1:
+                // Cambiar a verde
+                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AEFF80"))); // Verde
+                break;
+            case 2:
+                // Cambiar a rojo
+                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF7979"))); // Rojo
+                break;
+            case 3:
+                // Cambiar a amarillo
+                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FCFE68"))); // Amarillo
+                break;
+            default:
+                // Opción por defecto (puedes manejarla si lo deseas)
+                break;
+        }
         holder.bind(mesa,position, listener);
     }
 
