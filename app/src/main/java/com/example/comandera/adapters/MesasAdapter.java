@@ -1,5 +1,8 @@
 package com.example.comandera.adapters;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -10,7 +13,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.comandera.FamiliasActivity;
+import com.example.comandera.MesasActivity;
 import com.example.comandera.R;
+import com.example.comandera.data.TicketBD;
+import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.Mesa;
 
 import java.util.List;
@@ -20,9 +27,20 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
     private List<Mesa> mesas;
     private OnItemClickListener listener;
 
+
+    public void updateData(List<Mesa> newMesas) {
+        this.mesas = newMesas;
+        notifyDataSetChanged(); // Notificar al adaptador que los datos han cambiado
+    }
+
     public interface OnItemClickListener {
         void onItemClick(int position);
+        void onItemLongClick(int position);
     }
+
+
+
+
     public MesasAdapter(List<Mesa> mesas, OnItemClickListener listener) {
         this.mesas = mesas;
         this.listener = listener;
@@ -85,10 +103,20 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
 
         public void bind(Mesa mesa,final int position, final OnItemClickListener listener) {
             textViewNombre.setText(mesa.getNombre());
+            //Manejo click corto
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v){
                     listener.onItemClick(position);
+                }
+            });
+
+            // Manejar el clic largo
+            itemView.setOnLongClickListener(new View.OnLongClickListener() { // /* cambio */
+                @Override
+                public boolean onLongClick(View v) {
+                    listener.onItemLongClick(position); // /* cambio */
+                    return true; // Indicar que el evento ha sido manejado
                 }
             });
         }

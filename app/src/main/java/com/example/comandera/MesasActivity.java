@@ -27,6 +27,9 @@ import com.example.comandera.utils.Ticket;
 import com.example.comandera.utils.ZonaVenta;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MesasActivity extends AppCompatActivity {
     VariablesGlobales varGlob;
@@ -35,6 +38,7 @@ public class MesasActivity extends AppCompatActivity {
     ZonasAdapter zonasAdapter;
     MesasAdapter mesasAdapter;
     private Button botonCerrarSesion;
+    private ScheduledExecutorService scheduler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +104,49 @@ public class MesasActivity extends AppCompatActivity {
                                     varGlob.setMesaActual(zv.getListaMesas().get(position));
                                     new CheckTicketTask(1).execute();
                                 }
+
+                                @Override
+                                public void onItemLongClick(int position){
+                                    varGlob.setMesaActual(zv.getListaMesas().get(position));
+                                    int estadoMesa=varGlob.getMesaActual().getEstado();
+                                    Toast.makeText(MesasActivity.this,estadoMesa+"",Toast.LENGTH_SHORT).show();
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MesasActivity.this);
+                                    switch (estadoMesa){
+                                        case 1:
+                                            builder.setTitle("¿Quieres reservar la mesa?");
+                                            builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    new CambiarEstadoMesas().execute(1);
+                                                }
+                                            });
+                                            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    //Cancela y no pasa nada
+                                                }
+                                            });
+                                            AlertDialog dialog = builder.create();
+                                            dialog.show();
+                                            break;
+                                        case 2:
+                                            Toast.makeText(MesasActivity.this,"Mesa ocupada",Toast.LENGTH_SHORT).show();
+                                            break;
+                                        case 3:
+                                            builder.setTitle("¿Quieres quitar la reserva de la mesa?");
+                                            builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    new CambiarEstadoMesas().execute(2);
+                                                }
+                                            });
+                                            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    //Cancela y no pasa nada
+                                                }
+                                            });
+                                            AlertDialog dialog2 = builder.create();
+                                            dialog2.show();
+                                            break;
+                                    }
+                                }
                             });
                             recyclerViewMesas.setAdapter(mesasAdapter);
                         } else {
@@ -112,6 +159,18 @@ public class MesasActivity extends AppCompatActivity {
                 recyclerViewZonas.setAdapter(zonasAdapter);
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        comenzarRecargaEstadosDeMesa();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        pararRecargaEstadosDeMesa();
     }
 
     //Arreglo para que cuando intentes ir hacia atras vaya a usuarios empezando la app de nuevo
@@ -168,13 +227,6 @@ public class MesasActivity extends AppCompatActivity {
                 ticket.setNuevo(true);
                 varGlob.setTicketActual(ticket);
 
-                intent.putExtra("mesaId", varGlob.getMesaActual().getId());
-                intent.putExtra("zonaVenta", varGlob.getZonaActual().getZona());
-                intent.putExtra("mesaNombre", varGlob.getMesaActual().getNombre());
-                intent.putExtra("zonaId", varGlob.getZonaActual().getId());
-                intent.putExtra("seccionId", varGlob.getSeccionIdUsuariosActual());
-                intent.putExtra("fichaPersonal", varGlob.getUsuarioActual());
-                intent.putExtra("dispositivoId", varGlob.getIdDispositivoActual());
                 startActivity(intent);
             }
         }
@@ -198,6 +250,56 @@ public class MesasActivity extends AppCompatActivity {
             Intent intent =new Intent(MesasActivity.this,FamiliasActivity.class);
             varGlob.setTicketActual(ticket);
             startActivity(intent);
+        }
+    }
+
+    private class CambiarEstadoMesas extends AsyncTask<Integer, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(Integer... params) {
+            int estadoMesa = params[0];
+            TicketBD ticketBD=new TicketBD(varGlob.getConexionSQL());
+            if (estadoMesa==1){
+                ticketBD.actualizaMesaAReservada(varGlob.getMesaActual().getId());
+            }else{
+                ticketBD.actualizaMesaALibre(varGlob.getMesaActual().getId());
+            }
+            new TicketBD(varGlob.getConexionSQL()).actualizarEstadoMesas(varGlob.getListaZonas());
+            return estadoMesa;
+        }
+
+        @Override
+        protected void onPostExecute(Integer resultado) {
+            if(varGlob.getZonaActual()!=null&&mesasAdapter!=null){
+                mesasAdapter.updateData(varGlob.getZonaActual().getListaMesas());
+            }
+        }
+    }
+
+
+    private void comenzarRecargaEstadosDeMesa() {
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                new TicketBD(varGlob.getConexionSQL()).actualizarEstadoMesas(varGlob.getListaZonas());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Cambios en la UI
+                        if(varGlob.getZonaActual()!=null&&mesasAdapter!=null){
+                            System.out.println("Hecho");
+                            mesasAdapter.updateData(varGlob.getZonaActual().getListaMesas());
+                        }
+                    }
+                });
+            }
+        }, 5, 1, TimeUnit.SECONDS); // Inicia inmediatamente y repite cada 5 segundos
+    }
+
+    private void pararRecargaEstadosDeMesa() {
+        if (scheduler != null) {
+            scheduler.shutdown(); // Detiene la ejecución
         }
     }
 

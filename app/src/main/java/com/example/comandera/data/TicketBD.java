@@ -1,7 +1,9 @@
 package com.example.comandera.data;
 
 import com.example.comandera.utils.DetalleDocumento;
+import com.example.comandera.utils.Mesa;
 import com.example.comandera.utils.Ticket;
+import com.example.comandera.utils.ZonaVenta;
 
 import android.content.Context;
 import android.widget.Toast;
@@ -10,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLOutput;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -113,8 +116,6 @@ public class TicketBD {
                 insertStatement.setDouble(10, idUsuarioTpv);
                 insertStatement.setInt(11, comensales);
                 insertStatement.setInt(12,zonaID);
-
-
                 insertStatement.executeUpdate();
 
                 // Obtener el ID de la cabecera recién creada
@@ -125,11 +126,13 @@ public class TicketBD {
 
                 generatedKeys.close();
                 insertStatement.close();
+                insertStatement.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
             }
         }
+        actualizaMesaAOcupada(idMesa);
         return newRowId;
     }
 
@@ -151,7 +154,7 @@ public class TicketBD {
     }
 
 
-    public int borrarTicket(int ticketID) {
+    public int borrarTicket(int ticketID,int idMesa) {
         int columnasBorradas=0;
         if (sqlServerConnection.getConexion() != null) {
             try {
@@ -161,11 +164,13 @@ public class TicketBD {
                 insertStatement.setInt(1,ticketID);
                 columnasBorradas=insertStatement.executeUpdate();
                 insertStatement.close();
+                borrarDetalles(ticketID);
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
             }
         }
+        actualizaMesaALibre(idMesa);
         return columnasBorradas;
     }
 
@@ -206,6 +211,69 @@ public class TicketBD {
         }
     }
 
+
+    public void actualizaMesaALibre(int idMesa){
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                String query = "UPDATE MESAS SET estado_mesa = 1 WHERE id = ?;";
+                PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                preparedStatement.setInt(1, idMesa);
+                preparedStatement.executeUpdate();
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void actualizaMesaAOcupada(int idMesa){
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                String query = "UPDATE MESAS SET estado_mesa = 2 WHERE id = ?;";
+                PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                preparedStatement.setInt(1, idMesa);
+                preparedStatement.executeUpdate();
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void actualizaMesaAReservada(int idMesa){
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                String query = "UPDATE MESAS SET estado_mesa = 3 WHERE id = ?;";
+                PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                preparedStatement.setInt(1, idMesa);
+                preparedStatement.executeUpdate();
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void actualizarEstadoMesas(List<ZonaVenta> zonas){
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                for (ZonaVenta zona:zonas) {
+                    String query = "SELECT estado_mesa FROM Mesas WHERE zona_id = ?";
+                    PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                    preparedStatement.setInt(1, zona.getId());
+                    ResultSet resultSet = preparedStatement.executeQuery();
+                    int contador=0;
+                    while (resultSet.next()) {
+                        int estadoMesa = resultSet.getInt("estado_mesa");
+                        zona.getListaMesas().get(contador).setEstado(estadoMesa);
+                        contador++;
+                    }
+                    resultSet.close();
+                    preparedStatement.close();
+                }
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+        System.out.println(zonas.toString());
+    }
 
 
 

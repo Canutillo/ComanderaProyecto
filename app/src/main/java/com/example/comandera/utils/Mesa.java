@@ -5,7 +5,7 @@ public class Mesa {
     private int numero;
     private String nombre;
     private int zonaId;
-    private int estado=1;
+    private int estado=0;
 
     public Mesa(int id, int numero, String nombre, int zonaId) {
         this.id = id;

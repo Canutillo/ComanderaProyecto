@@ -19,7 +19,7 @@ public class MesasBD {
         List<Mesa> mesas = new ArrayList<>();
         try {
             if (sqlConnection.getConexion() != null) {
-                String query = "SELECT id, zona_id, numero, nombre FROM Mesas WHERE zona_id = ?";
+                String query = "SELECT id, zona_id, numero, nombre,estado_mesa FROM Mesas WHERE zona_id = ?";
                 PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, zonaId);
                 ResultSet resultSet = preparedStatement.executeQuery();
@@ -29,7 +29,9 @@ public class MesasBD {
                     int numero = resultSet.getInt("numero");
                     String nombre = resultSet.getString("nombre");
                     int zona_id = resultSet.getInt("zona_id");
+                    int estado_mesa=resultSet.getInt("estado_mesa");
                     Mesa mesa = new Mesa(id, numero, nombre, zona_id);
+                    mesa.setEstado(estado_mesa);
                     mesas.add(mesa);
                 }
                 resultSet.close();

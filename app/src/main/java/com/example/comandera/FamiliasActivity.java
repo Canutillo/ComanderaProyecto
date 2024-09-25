@@ -93,6 +93,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
 
+        //Carga de la barra con el nombre
         if (varGlob.getUsuarioActual() != null) {
             tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp()+"/  "+varGlob.getMesaActual().getNombre());
         }
@@ -103,6 +104,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         }
         new GetVisibleFamilias().execute(varGlob.getZonaActual().getId());
 
+        //Configuracion del boton de guardar
         botonGuardar.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -262,7 +264,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         @Override
         protected Integer doInBackground(Void... voids) {
             TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-            return ticketBD.borrarTicket(varGlob.getTicketActual().getId());
+            return ticketBD.borrarTicket(varGlob.getTicketActual().getId(),varGlob.getMesaActual().getId());
         }
 
         @Override
