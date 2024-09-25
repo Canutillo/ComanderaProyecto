@@ -41,8 +41,16 @@ private VariablesGlobales varGlob;
         // Obtener el ANDROID_ID
         varGlob.setMacActual(DeviceInfo.getAndroidID(this));
         new getMACS().execute();
+
+        //Servicio para gestionar la salida forzosa
+        Intent controlApagado = new Intent(this, ControlApagado.class);
+        startService(controlApagado);
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+    }
     //Arreglo para que si pulsas el boton de retroceso cierre la app
     @Override
     public void onBackPressed() {

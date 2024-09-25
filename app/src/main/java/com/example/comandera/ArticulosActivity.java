@@ -3,6 +3,7 @@ package com.example.comandera;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -98,7 +99,63 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
 
         new GetArticulos().execute();
         cargaTicket();
+        //Metodo para la inactividad
+        startInactivityTimer();
     }
+
+    //Metodo para la inactividad
+    private CountDownTimer inactivityTimer;
+
+    private void startInactivityTimer() {
+        inactivityTimer = new CountDownTimer(5000, 10000) {
+            public void onTick(long millisUntilFinished) {
+                if(millisUntilFinished<10000){
+                    Toast.makeText(ArticulosActivity.this,"En 10 segundo se cerrará la app si no la usas.",Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            public void onFinish() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Operaciones de base de datos
+                        System.out.println("A eliminar");
+                        if (varGlob.getTicketActual() != null) {
+                            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                            ticketBD.actualizaEscribiendo(false, varGlob.getTicketActual().getId());
+                        }
+                    }
+                }).start();
+                finishAffinity();
+            }
+        }.start();
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        resetInactivityTimer();
+    }
+
+    private void resetInactivityTimer() {
+        if (inactivityTimer != null) {
+            inactivityTimer.cancel(); // Cancela el temporizador anterior
+        }
+        startInactivityTimer(); // Inicia uno nuevo
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+    }
+
+
 
     //Trato del boton de añadir
     @Override
@@ -258,12 +315,4 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             }
         }
     }
-
-
-
-
-
-
-
-
 }

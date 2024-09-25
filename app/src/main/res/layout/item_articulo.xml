@@ -33,7 +33,6 @@
             android:id="@+id/articuloNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:layout_weight="0.2"
             android:text="Agua"
             android:maxLines="1"

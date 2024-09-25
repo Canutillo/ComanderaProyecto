@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.AdapterView;
@@ -119,6 +120,50 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                 }
             }
         });
+        //Metodo para la inactividad
+        startInactivityTimer();
+    }
+
+    //Metodo para la inactividad
+    private CountDownTimer inactivityTimer;
+
+    private void startInactivityTimer() {
+        inactivityTimer = new CountDownTimer(60000, 10000) {
+            public void onTick(long millisUntilFinished) {
+                if(millisUntilFinished<10000){
+                    Toast.makeText(FamiliasActivity.this,"En 10 segundo se cerrará la app si no la usas",Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            public void onFinish() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Operaciones de base de datos
+                        System.out.println("A eliminar");
+                        if (varGlob.getTicketActual() != null) {
+                            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                            ticketBD.actualizaEscribiendo(false, varGlob.getTicketActual().getId());
+                        }
+                    }
+                }).start();
+                finishAffinity();
+            }
+        }.start();
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        resetInactivityTimer();
+    }
+
+    private void resetInactivityTimer() {
+        if (inactivityTimer != null) {
+            inactivityTimer.cancel(); // Cancela el temporizador anterior
+        }
+        startInactivityTimer(); // Inicia uno nuevo
     }
 
     @Override
@@ -126,6 +171,18 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         super.onStart();
         ordenPreparacion.setSelection(varGlob.getOrdenPreparacionActual());
     }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
+    }
+
     //Trato del boton de añadir
     @Override
     public void onButton1Click(int position) {
@@ -139,6 +196,8 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         varGlob.getTicketActual().quitarUnidad(position);
         cargaTicket();
     }
+
+
 
 
 
@@ -217,16 +276,6 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             }
         }
     };
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(updateReceiver);
-    }
-
-
-
 
     private class GetVisibleFamilias extends AsyncTask<Integer, Void, List<Familia>> {
         @Override
@@ -321,4 +370,9 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
     }
 
 
+
+
+
 }
+
+
