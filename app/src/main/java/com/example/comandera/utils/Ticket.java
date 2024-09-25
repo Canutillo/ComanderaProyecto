@@ -15,6 +15,7 @@ public class Ticket implements Parcelable {
     private double numero;
     private double serieId;
     private List<DetalleDocumento> detallesTicket=new ArrayList<>();
+    private boolean escribiendo;
 
     // Constructor
     public Ticket() {
@@ -87,8 +88,15 @@ public class Ticket implements Parcelable {
         this.detallesTicket = detalles;
     }
 
+    public boolean isEscribiendo() {
+        return escribiendo;
+    }
 
-    public void anadirDetalleDocumentoVenta(Articulo articulo,List<TipoIVA> tiposDeIVA,List <TarifasDeVenta> tarifasDeVentas,String descripcion_larga,int idTarifaVenta,int ordenPreparacion ){
+    public void setEscribiendo(boolean escribiendo) {
+        this.escribiendo = escribiendo;
+    }
+
+    public void anadirDetalleDocumentoVenta(Articulo articulo, List<TipoIVA> tiposDeIVA, List <TarifasDeVenta> tarifasDeVentas, String descripcion_larga, int idTarifaVenta, int ordenPreparacion ){
         DetalleDocumento detalle=new DetalleDocumento();
         detalle.setArticuloID(articulo.getId());
         detalle.setOrdenPreparacion(ordenPreparacion);

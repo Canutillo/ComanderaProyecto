@@ -219,7 +219,7 @@ public class MesasActivity extends AppCompatActivity {
         protected void onPostExecute(Ticket ticket) {
             varGlob.setTicketActual(ticket);
             if (ticket != null) {
-                new CargarDetallesTask().execute();
+                new CargarDetallesTaskYActualizaEscribiendo().execute();
             }else{
                 Intent intent;
                 intent = new Intent(MesasActivity.this, ComensalesActivity.class);
@@ -234,22 +234,31 @@ public class MesasActivity extends AppCompatActivity {
 
     //AsyncTask para cargar los detalles en el ticket
 
-    private class CargarDetallesTask extends AsyncTask<Void, Void, Ticket> {
+    private class CargarDetallesTaskYActualizaEscribiendo extends AsyncTask<Void, Void, Ticket> {
 
         @Override
         protected Ticket doInBackground(Void... voids) {
             Ticket ticket=varGlob.getTicketActual();
             TicketBD ticketBD=new TicketBD(varGlob.getConexionSQL());
-            ticketBD.cargarDetallesEnTicket(ticket,MesasActivity.this);
-            return ticket;
+            if(!ticketBD.isEscribiendo(varGlob.getTicketActual().getId())){
+                ticketBD.cargarDetallesEnTicket(ticket,MesasActivity.this);
+                ticketBD.actualizaEscribiendo(true,varGlob.getTicketActual().getId());
+                return ticket;
+            }else{
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(Ticket ticket) {
 
-            Intent intent =new Intent(MesasActivity.this,FamiliasActivity.class);
-            varGlob.setTicketActual(ticket);
-            startActivity(intent);
+            if (ticket!=null){
+                Intent intent =new Intent(MesasActivity.this,FamiliasActivity.class);
+                varGlob.setTicketActual(ticket);
+                startActivity(intent);
+            }else{
+                Toast.makeText(MesasActivity.this,"El ticket esta ocupado",Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -294,7 +303,7 @@ public class MesasActivity extends AppCompatActivity {
                     }
                 });
             }
-        }, 5, 1, TimeUnit.SECONDS); // Inicia inmediatamente y repite cada 5 segundos
+        }, 1, 1, TimeUnit.SECONDS); // Inicia inmediatamente y repite cada 5 segundos
     }
 
     private void pararRecargaEstadosDeMesa() {

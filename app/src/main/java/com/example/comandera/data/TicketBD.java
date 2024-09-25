@@ -31,7 +31,7 @@ public class TicketBD {
     public Ticket getTicketForMesa(int mesaId, int dispositivoId, int seccionId) {
         Ticket ticket = null;
         if (sqlServerConnection.getConexion() != null) {
-            String query = "SELECT id, estado_documento, fecha, numero, serie_id, num_comensales FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 "+/*AND dispositivo_id = ?*/" AND tipo = 5 AND seccion_id = ?";
+            String query = "SELECT id, estado_documento, fecha, numero, serie_id, num_comensales,escribiendo FROM Cabecera_Documentos_Venta WHERE mesa_id = ? AND estado_documento = 0 "+/*AND dispositivo_id = ?*/" AND tipo = 5 AND seccion_id = ?";
             try {
                 PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                 statement.setInt(1, mesaId);
@@ -48,6 +48,7 @@ public class TicketBD {
                     ticket.setNumero(resultSet.getDouble("numero"));
                     ticket.setSerieId(resultSet.getDouble("serie_id"));
                     ticket.setComensales(resultSet.getInt("num_comensales"));
+                    ticket.setEscribiendo(resultSet.getBoolean("escribiendo"));
                 }
                 resultSet.close();
                 statement.close();
@@ -275,7 +276,39 @@ public class TicketBD {
         System.out.println(zonas.toString());
     }
 
+    public void actualizaEscribiendo(boolean escribiendo,int ticketID){
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                String query = "UPDATE Cabecera_Documentos_Venta SET escribiendo = ? WHERE id = ?;";
+                PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                preparedStatement.setBoolean(1, escribiendo);
+                preparedStatement.setInt(2,ticketID);
+                preparedStatement.executeUpdate();
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
 
+    public boolean isEscribiendo(int ticketID){
+        boolean escribiendo=false;
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                String query = "SELECT escribiendo FROM Cabecera_Documentos_Venta WHERE id = ?;";
+                PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                preparedStatement.setInt(1, ticketID);
+                ResultSet resultSet=preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    escribiendo=resultSet.getBoolean("escribiendo");
+                }
+                resultSet.close();
+                preparedStatement.close();
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+        return escribiendo;
+    }
 
 
     //CODIGO A BORRAR DE CARLOTA

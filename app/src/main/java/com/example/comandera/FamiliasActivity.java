@@ -115,7 +115,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                     startActivity(intent);
                     finish();
                 }else{
-                    new ActualizaDetalles().execute();
+                    new ActualizaDetallesYCambiarEscribiendo().execute();
                 }
             }
         });
@@ -177,14 +177,20 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             builder.setTitle("¿Desea guardar el ticket?");
             builder.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    new ActualizaDetalles().execute();
+                    new ActualizaDetallesYCambiarEscribiendo().execute();
                     Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
                     startActivity(intent);
                     finish();
                 }
             });
+
+
+
+
+
             builder.setNegativeButton("No guardar", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
+                    new CambiarEscribiendoFalso().execute();
                     Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
                     startActivity(intent);
                     finish();
@@ -249,6 +255,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             //Creamos el ticket nuevo con serie 1 ya que es la que hay por ahora
             long idNuevo = ticketBD.crearTicket(1,varGlob.getSeccionIdUsuariosActual(),varGlob.getIdDispositivoActual(),varGlob.getMesaActual().getId(),varGlob.getUsuarioActual().getId(),varGlob.getTicketActual().getComensales(),varGlob.getZonaActual().getId());
             varGlob.getTicketActual().setId((int) idNuevo);
+            ticketBD.actualizaEscribiendo(true,varGlob.getTicketActual().getId());
             return null; // Retorna null porque es de tipo Void
         }
 
@@ -276,13 +283,14 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         }
     }
 
-    private class ActualizaDetalles extends AsyncTask<Void, Void, Void> {
+    private class ActualizaDetallesYCambiarEscribiendo extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
             TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
             ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
             ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+            ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
             return null;
         }
 
@@ -293,4 +301,24 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             finish();
         }
     }
+
+
+    private class CambiarEscribiendoFalso extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+            ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+
 }
