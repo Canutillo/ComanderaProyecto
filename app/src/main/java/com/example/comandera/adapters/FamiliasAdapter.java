@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.comandera.ArticulosActivity;
 import com.example.comandera.R;
 import com.example.comandera.VariablesGlobales;
@@ -64,15 +65,10 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
         Familia familia = familias.get(position);
         holder.familiaNombre.setText(familia.getNombre());
 
-        /*
-        // Usando Picasso para cargar la imagen desde una URL
-        Picasso.get()
-                .load(familia.getUrl())
-                .placeholder(R.drawable.placeholder) // Imagen por defecto
-                .error(R.drawable.error) // Imagen en caso de error
+        Glide.with(context)
+                .load(familia.getImage())
                 .into(holder.familiaImagen);
 
-        */
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

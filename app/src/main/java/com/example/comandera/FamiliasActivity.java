@@ -107,14 +107,14 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         new GetVisibleFamilias().execute(varGlob.getZonaActual().getId());
 
         //Configuracion del boton de mandar a cocina
-        botonCocina.setOnClickListener(new View.OnClickListener() {
+/*        botonCocina.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mandarCocina();
                 Toast.makeText(FamiliasActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
 
             }
-        });
+        });*/
 
         //Configuracion del boton de guardar
         botonGuardar.setOnClickListener(new View.OnClickListener(){

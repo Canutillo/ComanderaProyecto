@@ -16,7 +16,7 @@
         android:adjustViewBounds="true"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/ksoft" />
+        app:srcCompat="@drawable/usuario" />
 
     <TextView
         android:id="@+id/nombreUsuario"

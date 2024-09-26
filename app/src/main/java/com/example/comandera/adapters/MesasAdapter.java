@@ -71,15 +71,15 @@ public class MesasAdapter extends RecyclerView.Adapter<MesasAdapter.MesaViewHold
         switch (valor) {
             case 1:
                 // Cambiar a verde
-                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AEFF80"))); // Verde
+                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#afff80"))); // Verde
                 break;
             case 2:
                 // Cambiar a rojo
-                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF7979"))); // Rojo
+                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff8080"))); // Rojo
                 break;
             case 3:
                 // Cambiar a amarillo
-                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FCFE68"))); // Amarillo
+                holder.textViewNombre.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#fcff80"))); // Amarillo
                 break;
             default:
                 // Opción por defecto (puedes manejarla si lo deseas)

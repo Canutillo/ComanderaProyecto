@@ -31,6 +31,7 @@ public class FamiliasBD {
                 Familia familia = new Familia();
                 familia.setId(resultSet.getInt("id"));
                 familia.setNombre(resultSet.getString("codigo"));
+                familia.setImage(resultSet.getString("imagen"));
                 familias.add(familia);
             }
         } catch (Exception e) {

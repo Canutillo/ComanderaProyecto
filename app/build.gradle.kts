@@ -30,6 +30,7 @@ android {
 
 dependencies {
     implementation ("net.sourceforge.jtds:jtds:1.3.1")
+    implementation("com.github.bumptech.glide:glide:4.14.2")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
