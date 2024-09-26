@@ -93,6 +93,17 @@
         android:fadeScrollbars="false" />
 
     <ImageButton
+        android:id="@+id/mandarCocina"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/border"
+        android:scaleType="fitCenter"
+        android:src="@drawable/cocina"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageButton
         android:id="@+id/guardar"
         android:layout_width="50dp"
         android:layout_height="50dp"

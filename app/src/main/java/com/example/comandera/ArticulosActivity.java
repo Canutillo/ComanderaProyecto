@@ -107,7 +107,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
     private CountDownTimer inactivityTimer;
 
     private void startInactivityTimer() {
-        inactivityTimer = new CountDownTimer(5000, 10000) {
+        inactivityTimer = new CountDownTimer(60000, 10000) {
             public void onTick(long millisUntilFinished) {
                 if(millisUntilFinished<10000){
                     Toast.makeText(ArticulosActivity.this,"En 10 segundo se cerrará la app si no la usas.",Toast.LENGTH_SHORT).show();
@@ -148,6 +148,15 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
     @Override
     public void onResume(){
         super.onResume();
+        resetInactivityTimer();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        if (inactivityTimer != null) {
+            inactivityTimer.cancel(); // Cancela el temporizador si está en ejecución
+        }
     }
 
     @Override
@@ -308,7 +317,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                         }
                     });
                 }
-                builder.setCancelable(false)
+                builder.setCancelable(true)
                         .show();
             } else {
                 Toast.makeText(ArticulosActivity.this, "No se encontraron opciones para esta pregunta", Toast.LENGTH_SHORT).show();

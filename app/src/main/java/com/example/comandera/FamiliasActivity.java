@@ -33,6 +33,7 @@ import com.example.comandera.adapters.TicketAdapter;
 import com.example.comandera.data.FamiliasBD;
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.Familia;
+import com.example.comandera.utils.Ticket;
 
 import android.content.IntentFilter;
 
@@ -46,7 +47,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
     RecyclerView recyclerViewFamilias, recyclerTicket;
     TextView tvUser;
     TicketAdapter ticketAdapter;
-    ImageButton botonGuardar;
+    ImageButton botonGuardar,botonCocina;
     Spinner ordenPreparacion;
 
     @Override
@@ -82,7 +83,6 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
-
         });
 
         recyclerViewFamilias = findViewById(R.id.recyclerViewFamilias);
@@ -90,6 +90,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
         tvUser = findViewById(R.id.tvUser);
         botonGuardar=findViewById(R.id.guardar);
+        botonCocina=findViewById(R.id.mandarCocina);
 
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
@@ -104,6 +105,16 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             cargaTicket();
         }
         new GetVisibleFamilias().execute(varGlob.getZonaActual().getId());
+
+        //Configuracion del boton de mandar a cocina
+        botonCocina.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mandarCocina();
+                Toast.makeText(FamiliasActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
         //Configuracion del boton de guardar
         botonGuardar.setOnClickListener(new View.OnClickListener(){
@@ -171,10 +182,18 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         super.onStart();
         ordenPreparacion.setSelection(varGlob.getOrdenPreparacionActual());
     }
+    @Override
+    public void onResume(){
+        super.onResume();
+        resetInactivityTimer();
+    }
 
     @Override
     public void onPause(){
         super.onPause();
+        if (inactivityTimer != null) {
+            inactivityTimer.cancel(); // Cancela el temporizador si está en ejecución
+        }
     }
 
     @Override
@@ -242,11 +261,6 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                     finish();
                 }
             });
-
-
-
-
-
             builder.setNegativeButton("No guardar", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     new CambiarEscribiendoFalso().execute();
@@ -367,6 +381,26 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             startActivity(intent);
             finish();
         }
+    }
+
+    private void mandarCocina() {
+        Thread hilo = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                TicketBD ticketBD=new TicketBD(varGlob.getConexionSQL());
+                ticketBD.mandarCocina(varGlob.getTicketActual().getId());
+                botonCocina.setEnabled(false);
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                botonCocina.setEnabled(true);
+            }
+        });
+
+        // Iniciar el hilo
+        hilo.start();
     }
 
 
