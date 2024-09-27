@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.widget.Toast;
 
 import com.example.comandera.data.TicketBD;
+import com.example.comandera.utils.Ticket;
 
 public class ControlApagado extends Service {
 
@@ -33,8 +34,11 @@ public class ControlApagado extends Service {
                 // Operaciones de base de datos
                 System.out.println("A eliminar");
                 if (varGlob.getTicketActual() != null) {
+                    Ticket ticketActual=varGlob.getTicketActual();
                     TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-                    ticketBD.actualizaEscribiendo(false, varGlob.getTicketActual().getId());
+                    ticketBD.actualizaEscribiendo(false, ticketActual.getId());
+                    ticketBD.borrarDetalles(ticketActual.getId());
+                    ticketBD.actualizarTicket(ticketActual.getDetallesTicket(),ticketActual.getId());
                 }
             }
         }).start();

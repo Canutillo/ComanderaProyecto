@@ -60,6 +60,19 @@ public class TicketBD {
         return ticket;
     }
 
+    public void marcarTicketComoPagado(int ticketID){
+        if(sqlServerConnection.getConexion()!=null){
+            try{
+                String query = "UPDATE Cabecera_Documentos_Venta SET estado_documento = 1 WHERE id = ?;";
+                PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
+                preparedStatement.setInt(1, ticketID);
+                preparedStatement.executeUpdate();
+            }catch (SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void cargarDetallesEnTicket(Ticket ticket,Context context){
         if (ticket!=null){
             if (sqlServerConnection.getConexion() != null) {

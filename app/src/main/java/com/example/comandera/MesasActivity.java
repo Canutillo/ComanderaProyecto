@@ -109,7 +109,6 @@ public class MesasActivity extends AppCompatActivity {
                                 public void onItemLongClick(int position){
                                     varGlob.setMesaActual(zv.getListaMesas().get(position));
                                     int estadoMesa=varGlob.getMesaActual().getEstado();
-                                    Toast.makeText(MesasActivity.this,estadoMesa+"",Toast.LENGTH_SHORT).show();
                                     AlertDialog.Builder builder = new AlertDialog.Builder(MesasActivity.this);
                                     switch (estadoMesa){
                                         case 1:
@@ -303,7 +302,7 @@ public class MesasActivity extends AppCompatActivity {
                     }
                 });
             }
-        }, 1, 1, TimeUnit.SECONDS); // Inicia inmediatamente y repite cada 5 segundos
+        }, 0, 2, TimeUnit.SECONDS); // Inicia inmediatamente y repite cada 2 segundos
     }
 
     private void pararRecargaEstadosDeMesa() {

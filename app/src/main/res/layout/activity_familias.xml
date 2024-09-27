@@ -33,17 +33,18 @@
             android:id="@+id/tvText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.8"
+            android:layout_weight="0.6"
             android:paddingLeft="10dp"
             android:paddingTop="5dp"
-            android:text="Familias y Categorías"
+            android:text="Familias"
             android:textSize="26sp" />
 
         <Spinner
             android:id="@+id/ordenPreparacion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.2"
+            android:layout_weight="0.4"
+            android:layout_gravity="center"
             android:textAlignment="center"
             android:autoSizeTextType="uniform"
             android:autoSizeMinTextSize="11sp"
@@ -74,7 +75,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.6"
+        app:layout_constraintHeight_percent="0.5"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintVertical_bias="0.347" />
 
@@ -86,32 +87,58 @@
         app:layout_constraintTop_toBottomOf="@id/recyclerViewFamilias"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/guardar"
+        app:layout_constraintBottom_toTopOf="@id/mandarCocina"
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
         android:scrollbars="vertical"
         android:fadeScrollbars="false" />
 
     <ImageButton
-        android:id="@+id/mandarCocina"
+        android:id="@+id/borrarTicket"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/border"
+        android:background="@drawable/border_invisible"
         android:scaleType="fitCenter"
-        android:src="@drawable/cocina"
+        android:src="@drawable/borrar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <ImageButton
-        android:id="@+id/guardar"
+        android:id="@+id/repetirComanda"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@drawable/border"
+        android:background="@drawable/border_invisible"
         android:scaleType="fitCenter"
-        android:src="@drawable/guardar"
+        android:src="@drawable/repetir"
+        app:layout_constraintStart_toEndOf="@id/borrarTicket"
+        app:layout_constraintEnd_toStartOf="@id/mandarCocina"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/mandarCocina"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/border_invisible"
+        android:scaleType="fitCenter"
+        android:src="@drawable/cocina"
+        app:layout_constraintStart_toEndOf="@id/repetirComanda"
+        app:layout_constraintEnd_toStartOf="@id/pagarTicket"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageButton
+        android:id="@+id/pagarTicket"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/border_invisible"
+        android:scaleType="fitCenter"
+        android:src="@drawable/pagar"
+
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -32,6 +34,7 @@ import com.example.comandera.adapters.FamiliasAdapter;
 import com.example.comandera.adapters.TicketAdapter;
 import com.example.comandera.data.FamiliasBD;
 import com.example.comandera.data.TicketBD;
+import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.Familia;
 import com.example.comandera.utils.Ticket;
 
@@ -47,7 +50,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
     RecyclerView recyclerViewFamilias, recyclerTicket;
     TextView tvUser;
     TicketAdapter ticketAdapter;
-    ImageButton botonGuardar,botonCocina;
+    ImageButton botonCocina,botonBorrar,botonPagar;
     Spinner ordenPreparacion;
 
     @Override
@@ -89,8 +92,9 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
         recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
         tvUser = findViewById(R.id.tvUser);
-        botonGuardar=findViewById(R.id.guardar);
         botonCocina=findViewById(R.id.mandarCocina);
+        botonBorrar=findViewById(R.id.borrarTicket);
+        botonPagar=findViewById(R.id.pagarTicket);
 
         recyclerViewFamilias.setLayoutManager(new GridLayoutManager(this, 4));
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
@@ -107,30 +111,65 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         new GetVisibleFamilias().execute(varGlob.getZonaActual().getId());
 
         //Configuracion del boton de mandar a cocina
-/*        botonCocina.setOnClickListener(new View.OnClickListener() {
+        botonCocina.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mandarCocina();
+                actualizaDetallesYmandaCocina();
                 Toast.makeText(FamiliasActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
-
-            }
-        });*/
-
-        //Configuracion del boton de guardar
-        botonGuardar.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View v) {
-                if(varGlob.getTicketActual().getDetallesTicket().isEmpty()){
-                    new BorraTicket().execute();
-                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
-                    startActivity(intent);
-                    finish();
-                }else{
-                    new ActualizaDetallesYCambiarEscribiendo().execute();
-                }
             }
         });
+
+        //Configuracion del boton de borrar Ticket
+        botonBorrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(FamiliasActivity.this);
+                builder.setMessage("¿Quiere borrar el ticket?")
+                        .setTitle("Borrar");
+                // 3. Add buttons
+                builder.setPositiveButton("Borrar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        new BorraTicket().execute();
+                    }
+                });
+                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Cancela y no pasa nada
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+        //Configuracion del boton pagar ticket
+        botonPagar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                double sumatorio=0;
+                for (DetalleDocumento detalle : varGlob.getTicketActual().getDetallesTicket()) {
+                    // Suma el total de cada línea
+                    sumatorio =sumatorio + detalle.getTotalLinea().doubleValue();
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(FamiliasActivity.this);
+                builder.setMessage("Total de ticket: "+sumatorio+" €")
+                        .setTitle("Pagar ticket");
+                // 3. Add buttons
+                builder.setPositiveButton("Pagar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Metodo para pasar ticket a pagado
+                        new MarcarTicketPagado().execute();
+                    }
+                });
+                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Cancela y no pasa nada
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+
         //Metodo para la inactividad
         startInactivityTimer();
     }
@@ -155,6 +194,8 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                         System.out.println("A eliminar");
                         if (varGlob.getTicketActual() != null) {
                             TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                            ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                            ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
                             ticketBD.actualizaEscribiendo(false, varGlob.getTicketActual().getId());
                         }
                     }
@@ -246,39 +287,11 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         //super.onBackPressed();
         //Si el ticket tiene algo te pregunta guardar o no y sale, si el ticket esta vacio lo borra y sale
         if(varGlob.getTicketActual().getDetallesTicket().isEmpty()){
-            new BorraTicket().execute();
-            Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
-            startActivity(intent);
-            finish();
+            Toast.makeText(FamiliasActivity.this,"Ticket vacio, mesa ocupada",Toast.LENGTH_SHORT).show();
         }else{
-            AlertDialog.Builder builder = new AlertDialog.Builder(FamiliasActivity.this);
-            builder.setTitle("¿Desea guardar el ticket?");
-            builder.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    new ActualizaDetallesYCambiarEscribiendo().execute();
-                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.setNegativeButton("No guardar", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    new CambiarEscribiendoFalso().execute();
-                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.setNeutralButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                }
-            });
-            builder.setCancelable(false);
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        }//CONTROLAR QUE SE GUARDE EL TICKET TAMBIEN
+            actualizaDetalles();
+        }//CONTROLAR QUE SE GUARDE EL TICKET TAMBIEN Si tiene algo
+        new CambiarEscribiendoFalso().execute();
     }
 
     // BroadcastReceiver para manejar actualizaciones de ticket desde otras activities
@@ -343,27 +356,12 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                 // Ticket borrado con éxito
                 Toast.makeText(FamiliasActivity.this, "Ticket borrado", Toast.LENGTH_SHORT).show();
             }
-        }
-    }
-
-    private class ActualizaDetallesYCambiarEscribiendo extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-            ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
-            ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
-            ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
             Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
             startActivity(intent);
             finish();
         }
     }
+
 
 
     private class CambiarEscribiendoFalso extends AsyncTask<Void, Void, Void> {
@@ -383,19 +381,63 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         }
     }
 
-    private void mandarCocina() {
+    private class MarcarTicketPagado extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+            ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+            ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+            ticketBD.actualizaMesaALibre(varGlob.getMesaActual().getId());
+            ticketBD.marcarTicketComoPagado(varGlob.getTicketActual().getId());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+
+    private void actualizaDetallesYmandaCocina() {
+        botonCocina.setEnabled(false);
+        botonCocina.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C4C4C4")));
         Thread hilo = new Thread(new Runnable() {
             @Override
             public void run() {
-                TicketBD ticketBD=new TicketBD(varGlob.getConexionSQL());
+                TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
                 ticketBD.mandarCocina(varGlob.getTicketActual().getId());
-                botonCocina.setEnabled(false);
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                botonCocina.setEnabled(true);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        botonCocina.setEnabled(true);
+                        botonCocina.setBackgroundTintList(null);
+                    }
+                });
+            }
+        });
+
+        // Iniciar el hilo
+        hilo.start();
+    }
+
+    private void actualizaDetalles() {
+        Thread hilo = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
             }
         });
 
