@@ -1,6 +1,15 @@
 package com.example.comandera;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.utils.TarifasDeVenta;
@@ -14,7 +23,8 @@ import com.example.comandera.utils.ZonaVenta;
 
 import java.util.List;
 
-public class VariablesGlobales extends Application {
+public class VariablesGlobales extends Application implements LifecycleObserver {
+
     private SQLServerConnection conexionSQL;
     private int seccionIdUsuariosActual;
     private int IdDispositivoActual;
@@ -30,6 +40,60 @@ public class VariablesGlobales extends Application {
     private List<TipoIVA> tiposIVA;
     private List<TarifasDeVenta> tarifasDeVentas;
     private int ordenPreparacionActual;
+
+
+
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // Registra el observer del ciclo de vida
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+
+            }
+
+            @Override
+            public void onActivityStarted(@NonNull Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityResumed(@NonNull Activity activity) {
+                if((activity instanceof MainActivity)){
+                    if (macActual == null) {
+                        System.out.println("RESUMEDTASKS");
+                        Intent intent = new Intent(activity, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(intent); //
+                    }
+                }
+                System.out.println("Resumed");
+            }
+
+            @Override
+            public void onActivityPaused(@NonNull Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+            }
+
+            @Override
+            public void onActivityDestroyed(@NonNull Activity activity) {
+
+            }
+
+        });
+    }
+
 
 
 
@@ -152,4 +216,5 @@ public class VariablesGlobales extends Application {
     public void setOrdenPreparacionActual(int ordenPreparacionActual) {
         this.ordenPreparacionActual = ordenPreparacionActual;
     }
+
 }

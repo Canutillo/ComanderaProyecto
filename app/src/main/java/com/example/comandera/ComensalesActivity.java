@@ -53,14 +53,6 @@ public class ComensalesActivity extends AppCompatActivity {
                     ticket.setComensales(Integer.parseInt(comensales.getText().toString()));
                     ticket.setNuevo(true);
                     varGlob.setTicketActual(ticket);
-                    //intentBorrar
-                    int zonaId = getIntent().getIntExtra("zonaId", -1);
-                    i.putExtra("fichaPersonal", varGlob.getUsuarioActual());
-                    i.putExtra("zonaId", varGlob.getZonaActual().getId());
-                    i.putExtra("mesaId", varGlob.getMesaActual().getId());
-                    i.putExtra("seccionId", varGlob.getSeccionIdUsuariosActual());
-                    i.putExtra("comensales", varGlob.getTicketActual().getComensales());
-
                     startActivity(i);
                     return true;
                 }

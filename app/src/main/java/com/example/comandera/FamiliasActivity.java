@@ -115,7 +115,6 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             @Override
             public void onClick(View v) {
                 actualizaDetallesYmandaCocina();
-                Toast.makeText(FamiliasActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -129,7 +128,22 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                 // 3. Add buttons
                 builder.setPositiveButton("Borrar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        new BorraTicket().execute();
+                        AlertDialog.Builder builder2 = new AlertDialog.Builder(FamiliasActivity.this);
+                        builder2.setMessage("Por favor confirme la eliminacion del ticket")
+                                .setTitle("Borrar");
+                        // 3. Add buttons
+                        builder2.setPositiveButton("Cancelar", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //Cancela y no pasa nada
+                            }
+                        });
+                        builder2.setNegativeButton("Confirmar", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                new BorraTicket().execute();
+                            }
+                        });
+                        AlertDialog dialog2 = builder2.create();
+                        dialog2.show();
                     }
                 });
                 builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -403,32 +417,44 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
 
 
     private void actualizaDetallesYmandaCocina() {
-        botonCocina.setEnabled(false);
-        botonCocina.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C4C4C4")));
-        Thread hilo = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-                ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
-                ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
-                ticketBD.mandarCocina(varGlob.getTicketActual().getId());
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        botonCocina.setEnabled(true);
-                        botonCocina.setBackgroundTintList(null);
-                    }
-                });
-            }
-        });
+        if(!(varGlob.getTicketActual().getDetallesTicket().isEmpty())){
+            Toast.makeText(FamiliasActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
+            botonCocina.setEnabled(false);
+            botonCocina.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C4C4C4")));
+            Thread hilo = new Thread(new Runnable() {
+                @Override
+                public void run() {
 
-        // Iniciar el hilo
-        hilo.start();
+                    TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                    ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
+                    ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                    ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+                    ticketBD.mandarCocina(varGlob.getTicketActual().getId());
+                    //Volver a mesas
+                    Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
+                    startActivity(intent);
+                    finish();
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            botonCocina.setEnabled(true);
+                            botonCocina.setBackgroundTintList(null);
+                        }
+                    });
+                }
+            });
+
+            // Iniciar el hilo
+            hilo.start();
+        }else{
+            Toast.makeText(FamiliasActivity.this,"Ticket vacio no se puede mandar a cocina",Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     private void actualizaDetalles() {

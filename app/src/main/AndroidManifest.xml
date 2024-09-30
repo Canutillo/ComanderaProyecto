@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".VariablesGlobales"
         android:allowBackup="true"
@@ -15,11 +16,14 @@
         android:theme="@style/Theme.Comandera"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".CerrarAplicacionActivity"
+            android:exported="false" />
 
         <service
             android:name=".ControlApagado"
             android:enabled="true"
-            android:exported="true"/>
+            android:exported="true" />
 
         <activity
             android:name=".TicketActivity"

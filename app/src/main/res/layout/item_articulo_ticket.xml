@@ -13,25 +13,23 @@
         android:layout_height="match_parent"
         android:layout_weight="0.1"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="2dp"
         android:text="Ud"
         android:textColor="@android:color/black"
         android:maxLines="1"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="11sp"
-        android:autoSizeMaxTextSize="24sp"
-        android:autoSizeStepGranularity="1sp"
+        android:textSize="12sp"
         android:ellipsize="end" />
     <TextView
         android:id="@+id/tvDescripcionLarga"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:minHeight="40dp"
         android:layout_weight="0.35"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="2dp"
         android:text="Articulo"
         android:textColor="@android:color/black"
-        android:textSize="16sp" />
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/tvPVP"
@@ -40,13 +38,10 @@
         android:layout_weight="0.12"
         android:maxLines="1"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="2dp"
         android:text="PVP"
         android:textColor="@android:color/black"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="11sp"
-        android:autoSizeMaxTextSize="24sp"
-        android:autoSizeStepGranularity="1sp"
+        android:textSize="12sp"
         android:ellipsize="end" />
 
 
@@ -56,14 +51,11 @@
         android:layout_height="match_parent"
         android:layout_weight="0.12"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="2dp"
         android:text="€"
         android:maxLines="1"
         android:textColor="@android:color/black"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="11sp"
-        android:autoSizeMaxTextSize="24sp"
-        android:autoSizeStepGranularity="1sp"
+        android:textSize="12sp"
         android:ellipsize="end" />
 
 
@@ -73,14 +65,11 @@
         android:layout_height="match_parent"
         android:layout_weight="0.11"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="2dp"
         android:text="Orden"
         android:maxLines="1"
         android:textColor="@android:color/black"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="11sp"
-        android:autoSizeMaxTextSize="24sp"
-        android:autoSizeStepGranularity="1sp"
+        android:textSize="12sp"
         android:ellipsize="end" />
 
     <ImageButton

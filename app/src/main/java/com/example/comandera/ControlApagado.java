@@ -8,6 +8,10 @@ import android.widget.Toast;
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.Ticket;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 public class ControlApagado extends Service {
 
     private VariablesGlobales varGlob;
@@ -28,22 +32,27 @@ public class ControlApagado extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         // Crear un nuevo hilo para realizar la operación en segundo plano
-        new Thread(new Runnable() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 // Operaciones de base de datos
-                System.out.println("A eliminar");
                 if (varGlob.getTicketActual() != null) {
-                    Ticket ticketActual=varGlob.getTicketActual();
+                    Ticket ticketActual = varGlob.getTicketActual();
                     TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
                     ticketBD.actualizaEscribiendo(false, ticketActual.getId());
                     ticketBD.borrarDetalles(ticketActual.getId());
-                    ticketBD.actualizarTicket(ticketActual.getDetallesTicket(),ticketActual.getId());
+                    ticketBD.actualizarTicket(ticketActual.getDetallesTicket(), ticketActual.getId());
                 }
             }
-        }).start();
-
-        // Detener el servicio después de completar la tarea
+        });
+        executor.shutdown();
+        try {
+            executor.awaitTermination(10, TimeUnit.SECONDS); // Espera hasta 10 segundos que el hilo termine
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         stopSelf();
+
     }
 }

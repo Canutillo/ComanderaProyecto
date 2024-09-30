@@ -190,6 +190,7 @@ public class TicketBD {
 
     //Borra todos los detalles de un ticket con su id
     public void borrarDetalles(int ticketID){
+        System.out.println("BorrarDetalles");
         if (sqlServerConnection.getConexion() != null) {
             try {
                 String insertQuery = "DELETE FROM Detalle_Documentos_Venta WHERE cabecera_id = ?";
@@ -199,12 +200,14 @@ public class TicketBD {
                 insertStatement.close();
             } catch (SQLException e) {
                 e.printStackTrace();
+                System.out.println("Error en borraDetalles");
             }
         }
     }
 
     //Añade todas las lineas de detalles de un ticket
     public void actualizarTicket(List<DetalleDocumento> detalles, int ticketID){
+        System.out.println("ActualizarTicket");
         if (sqlServerConnection.getConexion() != null) {
             try {
                 String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea, Orden_preparacion) VALUES ";
@@ -215,14 +218,15 @@ public class TicketBD {
                 }
                 insertQuery=insertQuery.substring(0,insertQuery.length()-1);
                 insertQuery=insertQuery+";";
-                System.out.println(insertQuery);
                 PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery);
                 insertStatement.executeUpdate();
                 insertStatement.close();
             } catch (SQLException e) {
                 e.printStackTrace();
+                System.out.println("Error en actualizarTicket");
             }
         }
+
     }
 
 
@@ -286,12 +290,12 @@ public class TicketBD {
                 e.printStackTrace();
             }
         }
-        System.out.println(zonas.toString());
     }
 
     public void actualizaEscribiendo(boolean escribiendo,int ticketID){
         if(sqlServerConnection.getConexion()!=null){
             try{
+                System.out.println("ActualizaEscribiendo");
                 String query = "UPDATE Cabecera_Documentos_Venta SET escribiendo = ? WHERE id = ?;";
                 PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
                 preparedStatement.setBoolean(1, escribiendo);
@@ -299,6 +303,7 @@ public class TicketBD {
                 preparedStatement.executeUpdate();
             }catch (SQLException e){
                 e.printStackTrace();
+                System.out.println("Error en actualizaescribiendo");
             }
         }
     }

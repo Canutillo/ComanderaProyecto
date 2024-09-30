@@ -1,7 +1,9 @@
 package com.example.comandera;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.service.controls.Control;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -9,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.comandera.data.DispositivosBD;
 import com.example.comandera.data.MesasBD;
@@ -23,8 +28,8 @@ import com.example.comandera.utils.ZonaVenta;
 
 
 public class MainActivity extends AppCompatActivity {
-private VariablesGlobales varGlob;
-
+    private VariablesGlobales varGlob;
+    private ControlBloqueo screenReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Theme_Comandera);
@@ -45,11 +50,20 @@ private VariablesGlobales varGlob;
         //Servicio para gestionar la salida forzosa
         Intent controlApagado = new Intent(this, ControlApagado.class);
         startService(controlApagado);
+
+        // BroadcastReceiver para gestionar el bloqueo de pantalla
+        screenReceiver = new ControlBloqueo();
+        // Crear el IntentFilter para la acción de pantalla apagada
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        // Registrar el receptor con el filtro
+        registerReceiver(screenReceiver, filter);
+
     }
 
     @Override
     public void onDestroy(){
         super.onDestroy();
+        unregisterReceiver(screenReceiver);
     }
     //Arreglo para que si pulsas el boton de retroceso cierre la app
     @Override
@@ -58,6 +72,8 @@ private VariablesGlobales varGlob;
         finishAffinity();
         System.exit(1);
     }
+
+
 
     //Comprobar si la mac de nuestro dispositivio está en nuestra base de datos
     private class getMACS extends AsyncTask<Void, Void, Boolean> {
