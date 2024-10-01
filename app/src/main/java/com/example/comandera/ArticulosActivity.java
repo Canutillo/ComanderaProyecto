@@ -44,6 +44,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ArticulosActivity extends AppCompatActivity implements AnadirInterface {
+    private boolean nuevaEntrada;
     VariablesGlobales varGlob;
     RecyclerView recyclerViewArticulos, recyclerTicket;
     TextView tvText, tvUser;
@@ -62,6 +63,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             return insets;
         });
         varGlob = (VariablesGlobales) getApplicationContext();
+        nuevaEntrada=true;
 
         ordenPreparacion = findViewById(R.id.ordenPreparacion);
 
@@ -83,7 +85,6 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             }
 
         });
-        System.out.println("Articulos");
         tvUser = findViewById(R.id.tvUser);
         tvText = findViewById(R.id.tvText);
         recyclerViewArticulos = findViewById(R.id.recyclerViewArticulos);
@@ -108,6 +109,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         botonCocina.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                varGlob.setGuardarYsalirFamiliasArticulos(false);
                 actualizaDetallesYmandaCocina();
             }
         });
@@ -133,6 +135,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                         });
                         builder2.setNegativeButton("Confirmar", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                                varGlob.setGuardarYsalirFamiliasArticulos(false);
                                 new BorraTicket().execute();
                             }
                         });
@@ -166,6 +169,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                 builder.setPositiveButton("Pagar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //Metodo para pasar ticket a pagado
+                        varGlob.setGuardarYsalirFamiliasArticulos(false);
                         new MarcarTicketPagado().execute();
                     }
                 });
@@ -183,6 +187,8 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         cargaTicket();
         //Metodo para la inactividad
         startInactivityTimer();
+
+
     }
 
     //Metodo para la inactividad
@@ -233,6 +239,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
     public void onResume(){
         super.onResume();
         resetInactivityTimer();
+        varGlob.setGuardarYsalirFamiliasArticulos(true);
     }
 
     @Override
@@ -248,6 +255,13 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         super.onStop();
     }
 
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if(varGlob.isGuardarYsalirFamiliasArticulos()){
+            System.out.println("GuardarYSalir");
+            actualizaDetallesYSale();
+        }
+    }
 
 
     //Trato del boton de añadir
@@ -270,7 +284,6 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
 
     //METODO PARA MOSTRAR LOS DETALLES DEL TICKET
     public void cargaTicket() {
-        varGlob.getTicketActual().getDetallesTicket().sort(Comparator.comparingInt(DetalleDocumento::getOrdenPreparacion));
         if (varGlob.getTicketActual().getDetallesTicket() != null && !varGlob.getTicketActual().getDetallesTicket().isEmpty()) {
             if (ticketAdapter == null) {
                 ticketAdapter = new TicketAdapter(ArticulosActivity.this, varGlob.getTicketActual().getDetallesTicket(), this);
@@ -376,7 +389,8 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                 showPreguntaDialog(preguntas, 0, new ArrayList<>());
             } else {
                 //AÑADIR PRODUCTOS SIN PREGUNTAS
-                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual());
+                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual(),nuevaEntrada);
+                nuevaEntrada=false;
                 cargaTicket();
             }
         }
@@ -427,7 +441,8 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
                             } else {
                                 //AÑADIR PRODUCTOS CON PREGUNTAS
-                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual());
+                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual(),nuevaEntrada);
+                                nuevaEntrada=false;
                                 cargaTicket();
                             }
                         });
@@ -486,6 +501,25 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             hilo.start();
         }else{
             Toast.makeText(ArticulosActivity.this,"Ticket vacio no se puede mandar a cocina",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void actualizaDetallesYSale() {
+        if(!(varGlob.getTicketActual().getDetallesTicket().isEmpty())){
+            Thread hilo = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                    ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
+                    ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                    ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+                    //Volver a mesas
+                    finishAffinity();
+                }
+            });
+            // Iniciar el hilo
+            hilo.start();
         }
     }
 }

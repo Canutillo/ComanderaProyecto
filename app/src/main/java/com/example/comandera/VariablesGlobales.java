@@ -4,12 +4,11 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.comandera.data.SQLServerConnection;
 import com.example.comandera.utils.TarifasDeVenta;
@@ -21,6 +20,7 @@ import com.example.comandera.utils.Mesa;
 import com.example.comandera.utils.Ticket;
 import com.example.comandera.utils.ZonaVenta;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class VariablesGlobales extends Application implements LifecycleObserver {
@@ -40,6 +40,10 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
     private List<TipoIVA> tiposIVA;
     private List<TarifasDeVenta> tarifasDeVentas;
     private int ordenPreparacionActual;
+    private String nombreActivity;
+    //Este boolean sirve para que cuando le doy al boton del centro del movil o al de aplicaciones recientes me guarde los datos y desocupe el ticket por lo que para controlarlo
+    //tengo que cambiarlo a falso cada vez que haga algo voluntario en la app como ir a otra pagina usando la interfaz para que asi en el onUserLeaveHint este guarde y vaya a mesasActivity
+    private boolean guardarYsalirFamiliasArticulos;
 
 
 
@@ -52,34 +56,47 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-
             }
 
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
-
             }
 
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
-                if((activity instanceof MainActivity)){
-                    if (macActual == null) {
-                        System.out.println("RESUMEDTASKS");
-                        Intent intent = new Intent(activity, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        activity.startActivity(intent); //
-                    }
+                setNombreActivity(activity.getLocalClassName());
+                if (macActual == null) {
+                    System.out.println("Perdio los objetos en RAM va al main a recargarlos");
+                    Intent intent = new Intent(activity, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(intent); //
                 }
-                System.out.println("Resumed");
+                try {
+                    if (conexionSQL != null) {
+                        if (conexionSQL.getConexion().isClosed()) {
+                            System.out.println("La conexion estaba cerrada");
+                            conexionSQL.connect();
+                        } else {
+                        }
+                    }else{
+                        System.out.println("La conexion era nula y no ha recargado objetos en MAIN");
+                    }
+                }catch(SQLException e){
+                    System.out.println("Error");
+                    throw new RuntimeException(e);
+                }
+                Log.d("TAG", "|||"+nombreActivity.toUpperCase()+"|||");
             }
+
+
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
-
             }
 
             @Override
             public void onActivityStopped(Activity activity) {
+                Log.d("TAG", "|||"+nombreActivity.toUpperCase()+"|||"+"PARADO");
             }
 
             @Override
@@ -88,7 +105,6 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
 
             @Override
             public void onActivityDestroyed(@NonNull Activity activity) {
-
             }
 
         });
@@ -217,4 +233,19 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
         this.ordenPreparacionActual = ordenPreparacionActual;
     }
 
+    public String getNombreActivity() {
+        return nombreActivity;
+    }
+
+    public void setNombreActivity(String nombreActivity) {
+        this.nombreActivity = nombreActivity;
+    }
+
+    public boolean isGuardarYsalirFamiliasArticulos() {
+        return guardarYsalirFamiliasArticulos;
+    }
+
+    public void setGuardarYsalirFamiliasArticulos(boolean guardarYsalirFamiliasArticulos) {
+        this.guardarYsalirFamiliasArticulos = guardarYsalirFamiliasArticulos;
+    }
 }

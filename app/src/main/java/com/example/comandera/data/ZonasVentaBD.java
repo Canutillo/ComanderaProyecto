@@ -36,7 +36,11 @@ public class ZonasVentaBD {
                     idTarifa = resultSet1.getInt("id");
                 }
                 zonas.add(new ZonaVenta(id, zona, idTarifa));
+                preparedStatement1.close();
+                resultSet1.close();
             }
+            resultSet.close();
+            preparedStatement.close();
 
         } catch (Exception e) {
             e.printStackTrace();

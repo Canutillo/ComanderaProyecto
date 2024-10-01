@@ -96,7 +96,7 @@ public class Ticket implements Parcelable {
         this.escribiendo = escribiendo;
     }
 
-    public void anadirDetalleDocumentoVenta(Articulo articulo, List<TipoIVA> tiposDeIVA, List <TarifasDeVenta> tarifasDeVentas, String descripcion_larga, int idTarifaVenta, int ordenPreparacion ){
+    public void anadirDetalleDocumentoVenta(Articulo articulo, List<TipoIVA> tiposDeIVA, List <TarifasDeVenta> tarifasDeVentas, String descripcion_larga, int idTarifaVenta, int ordenPreparacion,boolean nuevaEntrada ){
         DetalleDocumento detalle=new DetalleDocumento();
         detalle.setArticuloID(articulo.getId());
         detalle.setOrdenPreparacion(ordenPreparacion);
@@ -128,22 +128,41 @@ public class Ticket implements Parcelable {
         detalle.setPrecio(tarifa);
         detalle.setPvp(tarifa*(1+iva));
         detalle.setCuotaIva(detalle.getPrecio()*detalle.getIva());
-        //Controlar cantidad
-        Boolean anadir=true;
-        for (DetalleDocumento detalleLista : this.getDetallesTicket()) {
-            if (detalleLista.getDescripcionLarga().equals(detalle.getDescripcionLarga()) && detalleLista.getOrdenPreparacion()==ordenPreparacion) {
-                detalleLista.setCantidad(detalleLista.getCantidad() + 1);
-                detalleLista.setTotalLinea(detalleLista.getTotalLinea().doubleValue()+tarifa*(1+iva));
-                anadir=false;
-                System.out.println("Repetido");
-                break;
+
+        //Este boolean se encarga de hacer que se agrupen las cosas o no
+        Boolean agrupar=false;
+        if(this.detallesTicket.size()>0){
+            if(detalle.getDescripcionLarga().equals(this.detallesTicket.get(this.detallesTicket.size()-1).getDescripcionLarga())){
+                agrupar=true;
             }
-        };
-        if(anadir){
+        }
+
+        if(agrupar && !nuevaEntrada){
+            //Controlar cantidad
+            Boolean anadir=true;
+            for (int i = this.detallesTicket.size() - 1; i >= 0; i--) {
+                DetalleDocumento detalleLista=this.detallesTicket.get(i);
+                if (detalleLista.getDescripcionLarga().equals(detalle.getDescripcionLarga()) && detalleLista.getOrdenPreparacion()==ordenPreparacion) {
+                    detalleLista.setCantidad(detalleLista.getCantidad() + 1);
+                    detalleLista.setTotalLinea(detalleLista.getTotalLinea().doubleValue()+tarifa*(1+iva));
+                    anadir=false;
+                    System.out.println("Repetido");
+                    break;
+                }
+            };
+            if(anadir){
+                detalle.setTotalLinea(tarifa*(1+iva));
+                detalle.setCantidad(1);
+                this.getDetallesTicket().add(detalle);
+
+            }
+        }else{
             detalle.setTotalLinea(tarifa*(1+iva));
             detalle.setCantidad(1);
             this.getDetallesTicket().add(detalle);
+
         }
+
 
         System.out.println(detalle.toString());
     }

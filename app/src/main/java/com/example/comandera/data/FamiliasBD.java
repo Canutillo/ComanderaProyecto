@@ -34,6 +34,8 @@ public class FamiliasBD {
                 familia.setImage(resultSet.getString("imagen"));
                 familias.add(familia);
             }
+            resultSet.close();
+            statement.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

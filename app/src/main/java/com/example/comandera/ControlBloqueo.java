@@ -3,10 +3,12 @@ package com.example.comandera;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.Ticket;
 
+import java.sql.SQLOutput;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +17,7 @@ public class ControlBloqueo extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d("TAG", "BroadcastCreado ");
         VariablesGlobales varGlob=(VariablesGlobales) context.getApplicationContext();
         if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
             // La pantalla se ha bloqueado
@@ -32,10 +35,18 @@ public class ControlBloqueo extends BroadcastReceiver {
                         ticketBD.actualizarTicket(ticketActual.getDetallesTicket(), ticketActual.getId());
                         System.out.println("Bloqueado TASKS");
                     }
-                    //Cerrar la app para evitar errores si el onResumed no funcionara
-/*                    Intent intent = new Intent(context, CerrarAplicacionActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent);*/
+                    //Dependiendo de donde este en ese momento la app nos vamos a un lado o a otro
+                    String nombreActivity= varGlob.getNombreActivity();
+                    if(nombreActivity.equals("MainActivity")||nombreActivity.equals("ConfigActivity")||nombreActivity.equals("UsuariosActivity")||nombreActivity.equals("ContrasenaActivity")){
+                        Intent intent = new Intent(context, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent);
+                        context.unregisterReceiver(ControlBloqueo.this);
+                    }else{
+                        Intent intent = new Intent(context, MesasActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent);
+                    }
                     System.out.println("Bloqueado");
                 }
             });

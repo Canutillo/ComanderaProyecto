@@ -155,7 +155,8 @@ public class UsuariosBD {
                 if (deviceIdResultSet.next()) {
                     deviceId = deviceIdResultSet.getInt("id");
                 }
-
+                deviceIdResultSet.close();
+                getDeviceIdStmt.close();
                 if (deviceId != -1) {
                     String query = "INSERT INTO Dispositivos_usuarios (id_dispositivo, id_usuario) VALUES (?, ?)";
                     PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);
@@ -189,7 +190,8 @@ public class UsuariosBD {
                 }else{
                     System.out.println("ID dispositivo no encontrado");
                 }
-
+                getDeviceIdStmt.close();
+                deviceIdResultSet.close();
                 if (deviceId != -1) {
                     String query = "DELETE FROM Dispositivos_Usuarios WHERE id_usuario = ? AND id_dispositivo = ?;";
                     PreparedStatement preparedStatement = sqlConnection.getConexion().prepareStatement(query);

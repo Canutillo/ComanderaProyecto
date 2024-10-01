@@ -4,6 +4,7 @@ package com.example.comandera;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -85,6 +86,8 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
         }
     }
 
+
+
     //Arreglo para que cuando intentes ir hacia atras reinicie la app
     @Override
     public void onBackPressed() {
@@ -120,7 +123,6 @@ public class UsuariosActivity extends AppCompatActivity implements FichaPersonal
             } else {
                 intent = new Intent(UsuariosActivity.this, MesasActivity.class);
             }
-            System.out.println("AQUI"+varGlob.getSeccionIdUsuariosActual());
             startActivity(intent);
             finish();
         }

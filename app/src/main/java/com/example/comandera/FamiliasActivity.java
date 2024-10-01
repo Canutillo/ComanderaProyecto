@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -24,7 +23,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,7 +34,6 @@ import com.example.comandera.data.FamiliasBD;
 import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.Familia;
-import com.example.comandera.utils.Ticket;
 
 import android.content.IntentFilter;
 
@@ -58,7 +55,6 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_familias);
-        System.out.println("Familias");
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -114,6 +110,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         botonCocina.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                varGlob.setGuardarYsalirFamiliasArticulos(false);
                 actualizaDetallesYmandaCocina();
             }
         });
@@ -139,6 +136,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                         });
                         builder2.setNegativeButton("Confirmar", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                                varGlob.setGuardarYsalirFamiliasArticulos(false);
                                 new BorraTicket().execute();
                             }
                         });
@@ -171,6 +169,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
                 builder.setPositiveButton("Pagar", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //Metodo para pasar ticket a pagado
+                        varGlob.setGuardarYsalirFamiliasArticulos(false);
                         new MarcarTicketPagado().execute();
                     }
                 });
@@ -241,6 +240,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
     public void onResume(){
         super.onResume();
         resetInactivityTimer();
+        varGlob.setGuardarYsalirFamiliasArticulos(true);
     }
 
     @Override
@@ -298,7 +298,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
 
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
+        super.onBackPressed();
         //Si el ticket tiene algo te pregunta guardar o no y sale, si el ticket esta vacio lo borra y sale
         if(varGlob.getTicketActual().getDetallesTicket().isEmpty()){
             Toast.makeText(FamiliasActivity.this,"Ticket vacio, mesa ocupada",Toast.LENGTH_SHORT).show();
@@ -306,6 +306,14 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
             actualizaDetalles();
         }//CONTROLAR QUE SE GUARDE EL TICKET TAMBIEN Si tiene algo
         new CambiarEscribiendoFalso().execute();
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if(varGlob.isGuardarYsalirFamiliasArticulos()){
+            actualizaDetallesYSale();
+        }
     }
 
     // BroadcastReceiver para manejar actualizaciones de ticket desde otras activities
@@ -389,9 +397,6 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Intent intent = new Intent(FamiliasActivity.this, MesasActivity.class);
-            startActivity(intent);
-            finish();
         }
     }
 
@@ -471,6 +476,23 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
         hilo.start();
     }
 
+    private void actualizaDetallesYSale() {
+        if(!(varGlob.getTicketActual().getDetallesTicket().isEmpty())){
+            Thread hilo = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                    ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
+                    ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                    ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+                    //Volver a mesas
+                    finishAffinity();
+                }
+            });
+            // Iniciar el hilo
+            hilo.start();
+        }
+    }
 
 
 

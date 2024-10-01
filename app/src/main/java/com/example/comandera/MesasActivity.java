@@ -45,7 +45,6 @@ public class MesasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_mesas);
-        System.out.println("Mesas");
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -172,6 +171,11 @@ public class MesasActivity extends AppCompatActivity {
         pararRecargaEstadosDeMesa();
     }
 
+    @Override
+    protected  void onDestroy(){
+        super.onDestroy();
+    }
+
     //Arreglo para que cuando intentes ir hacia atras vaya a usuarios empezando la app de nuevo
     @Override
     public void onBackPressed() {
@@ -296,7 +300,6 @@ public class MesasActivity extends AppCompatActivity {
                     public void run() {
                         // Cambios en la UI
                         if(varGlob.getZonaActual()!=null&&mesasAdapter!=null){
-                            System.out.println("Hecho");
                             mesasAdapter.updateData(varGlob.getZonaActual().getListaMesas());
                         }
                     }

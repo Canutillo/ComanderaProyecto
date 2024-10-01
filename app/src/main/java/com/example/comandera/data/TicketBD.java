@@ -67,6 +67,7 @@ public class TicketBD {
                 PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, ticketID);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }catch (SQLException e){
                 e.printStackTrace();
             }
@@ -140,7 +141,6 @@ public class TicketBD {
 
                 generatedKeys.close();
                 insertStatement.close();
-                insertStatement.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
@@ -207,13 +207,11 @@ public class TicketBD {
 
     //Añade todas las lineas de detalles de un ticket
     public void actualizarTicket(List<DetalleDocumento> detalles, int ticketID){
-        System.out.println("ActualizarTicket");
         if (sqlServerConnection.getConexion() != null) {
             try {
                 String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea, Orden_preparacion) VALUES ";
                 for (DetalleDocumento detalle:detalles) {
                     String detalleEscrito="("+ticketID+", "+detalle.getArticuloID()+", "+detalle.getCantidad()+", "+"'"+detalle.getDescripcion()+"'"+", "+"'"+detalle.getDescripcionLarga()+"'"+", "+detalle.getPrecio()+", "+detalle.getCuotaIva()+", "+detalle.getTotalLinea()+", "+detalle.getOrdenPreparacion()+") ,";
-                    System.out.println(detalleEscrito);
                     insertQuery=insertQuery + detalleEscrito;
                 }
                 insertQuery=insertQuery.substring(0,insertQuery.length()-1);
@@ -223,7 +221,6 @@ public class TicketBD {
                 insertStatement.close();
             } catch (SQLException e) {
                 e.printStackTrace();
-                System.out.println("Error en actualizarTicket");
             }
         }
 
@@ -237,6 +234,7 @@ public class TicketBD {
                 PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, idMesa);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }catch (SQLException e){
                 e.printStackTrace();
             }
@@ -250,6 +248,7 @@ public class TicketBD {
                 PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, idMesa);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }catch (SQLException e){
                 e.printStackTrace();
             }
@@ -263,6 +262,7 @@ public class TicketBD {
                 PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, idMesa);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }catch (SQLException e){
                 e.printStackTrace();
             }
@@ -301,6 +301,7 @@ public class TicketBD {
                 preparedStatement.setBoolean(1, escribiendo);
                 preparedStatement.setInt(2,ticketID);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }catch (SQLException e){
                 e.printStackTrace();
                 System.out.println("Error en actualizaescribiendo");
@@ -335,6 +336,7 @@ public class TicketBD {
                 PreparedStatement preparedStatement = sqlServerConnection.getConexion().prepareStatement(query);
                 preparedStatement.setInt(1, ticketID);
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }catch (SQLException e){
                 e.printStackTrace();
             }

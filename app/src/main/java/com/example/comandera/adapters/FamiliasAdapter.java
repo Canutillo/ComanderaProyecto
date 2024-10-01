@@ -75,6 +75,8 @@ public class FamiliasAdapter extends RecyclerView.Adapter<FamiliasAdapter.Famili
                 varGlob.setFamiliaActual(familia);
                 Intent intent = new Intent(context, ArticulosActivity.class);
                 context.startActivity(intent);
+                varGlob.setGuardarYsalirFamiliasArticulos(false);
+
             }
         });
     }
