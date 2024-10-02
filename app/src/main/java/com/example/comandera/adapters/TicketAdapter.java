@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.graphics.Color;
 
@@ -47,13 +48,13 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         int estado = detalle.getEstadoComanda();
         switch (estado) {
             case 0:
-                holder.itemView.setBackgroundColor(Color.parseColor("#ffffff"));
+                holder.linearLayout.setBackgroundColor(Color.parseColor("#ffffff"));
                 break;
             case 1:  // Estado comanda mandada a Poss
-                holder.itemView.setBackgroundColor(Color.parseColor("#b3b3b3"));
+                holder.linearLayout.setBackgroundColor(Color.parseColor("#b3b3b3"));
                 break;
             case 2:  // Estado comanda mandada a cocina
-                holder.itemView.setBackgroundColor(Color.parseColor("#b3b3b3"));
+                holder.linearLayout.setBackgroundColor(Color.parseColor("#b3b3b3"));
                 break;
         }
 
@@ -96,9 +97,11 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
     public static class TicketViewHolder extends RecyclerView.ViewHolder {
         TextView tvUd, tvDescripcionLarga, tvPVP, tvTotal,ordenPreparacion;
         ImageButton anadir,quitar;
+        LinearLayout linearLayout;
 
         public TicketViewHolder(@NonNull View itemView,final AnadirInterface anadirInterface) {
             super(itemView);
+            linearLayout=itemView.findViewById(R.id.linearLayout);
             tvUd = itemView.findViewById(R.id.tvUd);
             tvDescripcionLarga = itemView.findViewById(R.id.tvDescripcionLarga);
             tvPVP = itemView.findViewById(R.id.tvPVP);
@@ -106,8 +109,6 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
             ordenPreparacion=itemView.findViewById(R.id.tvOrdenPreparacion);
             anadir=itemView.findViewById(R.id.botonAnadir);
             quitar=itemView.findViewById(R.id.botonQuitar);
-
-
         }
     }
 }

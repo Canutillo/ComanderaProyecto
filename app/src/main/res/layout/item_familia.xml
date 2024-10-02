@@ -27,7 +27,8 @@
             android:scaleType="fitCenter"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ksoft" />
+            app:srcCompat="@drawable/ksoft"
+            android:background="@drawable/border_invisible"/>
 
         <!--Tamaño controlado en el adapter-->
 

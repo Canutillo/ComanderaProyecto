@@ -96,7 +96,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         recyclerTicket.setLayoutManager(new LinearLayoutManager(this));
 
         if (varGlob.getUsuarioActual() != null) {
-            tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp() + "/  " + varGlob.getMesaActual().getNombre());
+            tvUser.setText("Comandera -> " + varGlob.getUsuarioActual().getUsuarioApp() + " -> " + varGlob.getMesaActual().getNombre());
         }
         if (varGlob.getFamiliaActual().getNombre() != null) {
             tvText.setText(varGlob.getFamiliaActual().getNombre());

@@ -103,7 +103,7 @@ public class FamiliasActivity extends AppCompatActivity implements AnadirInterfa
 
         //Carga de la barra con el nombre
         if (varGlob.getUsuarioActual() != null) {
-            tvUser.setText("Comandera/ " + varGlob.getUsuarioActual().getUsuarioApp()+"/  "+varGlob.getMesaActual().getNombre());
+            tvUser.setText("Comandera -> " + varGlob.getUsuarioActual().getUsuarioApp()+" -> "+varGlob.getMesaActual().getNombre());
         }
         if(varGlob.getTicketActual().isNuevo()){
             new CreaTicket().execute();

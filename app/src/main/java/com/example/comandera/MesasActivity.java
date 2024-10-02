@@ -87,7 +87,7 @@ public class MesasActivity extends AppCompatActivity {
 
         //Click en las mesas
         if(varGlob.getUsuarioActual() != null){
-            tvUser.setText("Comandera/ " +varGlob.getUsuarioActual().getUsuarioApp());
+            tvUser.setText("Comandera -> " +varGlob.getUsuarioActual().getUsuarioApp());
             //Carga de las zonas en el adapter.
             if (!varGlob.getListaZonas().isEmpty()) {
                 zonasAdapter = new ZonasAdapter(varGlob.getListaZonas(), new ZonasAdapter.OnItemClickListener() {
