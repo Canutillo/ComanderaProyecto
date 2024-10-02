@@ -44,6 +44,7 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
     //Este boolean sirve para que cuando le doy al boton del centro del movil o al de aplicaciones recientes me guarde los datos y desocupe el ticket por lo que para controlarlo
     //tengo que cambiarlo a falso cada vez que haga algo voluntario en la app como ir a otra pagina usando la interfaz para que asi en el onUserLeaveHint este guarde y vaya a mesasActivity
     private boolean guardarYsalirFamiliasArticulos;
+    private boolean nuevaEntrada;
 
 
 
@@ -247,5 +248,13 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
 
     public void setGuardarYsalirFamiliasArticulos(boolean guardarYsalirFamiliasArticulos) {
         this.guardarYsalirFamiliasArticulos = guardarYsalirFamiliasArticulos;
+    }
+
+    public boolean isNuevaEntrada() {
+        return nuevaEntrada;
+    }
+
+    public void setNuevaEntrada(boolean nuevaEntrada) {
+        this.nuevaEntrada = nuevaEntrada;
     }
 }

@@ -96,11 +96,13 @@ public class Ticket implements Parcelable {
         this.escribiendo = escribiendo;
     }
 
-    public void anadirDetalleDocumentoVenta(Articulo articulo, List<TipoIVA> tiposDeIVA, List <TarifasDeVenta> tarifasDeVentas, String descripcion_larga, int idTarifaVenta, int ordenPreparacion,boolean nuevaEntrada ){
+    public void anadirDetalleDocumentoVenta(Articulo articulo, List<TipoIVA> tiposDeIVA, List <TarifasDeVenta> tarifasDeVentas, String descripcion_larga, int idTarifaVenta, int ordenPreparacion,boolean nuevaEntrada){
         DetalleDocumento detalle=new DetalleDocumento();
         detalle.setArticuloID(articulo.getId());
         detalle.setOrdenPreparacion(ordenPreparacion);
         detalle.setDescripcion(articulo.getNombre());
+        detalle.setEstadoComanda(0);
+        detalle.setOtraRonda(true);
         String descLarga;
         if(descripcion_larga.equals("")){
             descLarga=articulo.getNombre();
@@ -154,8 +156,8 @@ public class Ticket implements Parcelable {
                 detalle.setTotalLinea(tarifa*(1+iva));
                 detalle.setCantidad(1);
                 this.getDetallesTicket().add(detalle);
-
             }
+            nuevaEntrada=false;
         }else{
             detalle.setTotalLinea(tarifa*(1+iva));
             detalle.setCantidad(1);

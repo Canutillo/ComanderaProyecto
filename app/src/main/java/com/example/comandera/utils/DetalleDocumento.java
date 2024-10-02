@@ -14,8 +14,25 @@ public class DetalleDocumento {
     private double iva;
     private double cuotaIva;
     private int ordenPreparacion;
+    private int estadoComanda;
+    private boolean otraRonda;
 
     public DetalleDocumento() {
+    }
+
+    public DetalleDocumento(DetalleDocumento detalle) {
+        this.articuloID = detalle.articuloID;
+        this.descripcion = detalle.descripcion;
+        this.descripcionLarga = detalle.descripcionLarga;
+        this.cantidad = detalle.cantidad;
+        this.totalLinea = detalle.totalLinea;
+        this.pvp = detalle.pvp;
+        this.precio = detalle.precio;
+        this.iva = detalle.iva;
+        this.cuotaIva = detalle.cuotaIva;
+        this.ordenPreparacion = detalle.ordenPreparacion;
+        this.estadoComanda = detalle.estadoComanda;
+        this.otraRonda = detalle.otraRonda;
     }
 
     public DetalleDocumento(String descripcionLarga, int cantidad, double pvp, double totalLinea) {
@@ -115,16 +132,24 @@ public class DetalleDocumento {
         this.ordenPreparacion = ordenPreparacion;
     }
 
+    public int getEstadoComanda() {
+        return estadoComanda;
+    }
+
+    public void setEstadoComanda(int estadoComanda) {
+        this.estadoComanda = estadoComanda;
+    }
+
+    public boolean isOtraRonda() {
+        return otraRonda;
+    }
+
+    public void setOtraRonda(boolean otraRonda) {
+        this.otraRonda = otraRonda;
+    }
+
     @Override
     public String toString() {
-        return articuloID + " || " +
-                descripcion + " || " +
-                descripcionLarga + " || " +
-                cantidad + " || " +
-                totalLinea + " || " +
-                pvp + " || " +
-                precio + " || " +
-                iva + " || " +
-                cuotaIva;
+        return "<|||"+estadoComanda+"|||>\n";
     }
 }

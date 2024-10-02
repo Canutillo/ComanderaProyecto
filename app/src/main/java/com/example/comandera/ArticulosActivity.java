@@ -35,22 +35,19 @@ import com.example.comandera.data.TicketBD;
 import com.example.comandera.utils.Articulo;
 import com.example.comandera.utils.DetalleDocumento;
 import com.example.comandera.utils.PreguntaArticulo;
-import com.example.comandera.utils.Ticket;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class ArticulosActivity extends AppCompatActivity implements AnadirInterface {
-    private boolean nuevaEntrada;
     VariablesGlobales varGlob;
     RecyclerView recyclerViewArticulos, recyclerTicket;
     TextView tvText, tvUser;
     TicketAdapter ticketAdapter;
     Spinner ordenPreparacion;
-    ImageButton botonCocina,botonBorrar,botonPagar;
+    ImageButton botonCocina,botonBorrar,botonPagar,botonRepetirComanda;
 
 
     @Override
@@ -63,7 +60,6 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             return insets;
         });
         varGlob = (VariablesGlobales) getApplicationContext();
-        nuevaEntrada=true;
 
         ordenPreparacion = findViewById(R.id.ordenPreparacion);
 
@@ -91,6 +87,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         botonCocina=findViewById(R.id.mandarCocina);
         botonBorrar=findViewById(R.id.borrarTicket);
         botonPagar=findViewById(R.id.pagarTicket);
+        botonRepetirComanda=findViewById(R.id.repetirComanda);
 
         LinearLayout includedLayout = findViewById(R.id.recyclerTicket);
         recyclerTicket = includedLayout.findViewById(R.id.recyclerViewTicket);
@@ -105,14 +102,7 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
             tvText.setText(varGlob.getFamiliaActual().getNombre());
         }
 
-        //Configuracion del boton de mandar a cocina
-        botonCocina.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                varGlob.setGuardarYsalirFamiliasArticulos(false);
-                actualizaDetallesYmandaCocina();
-            }
-        });
+
 
         //Configuracion del boton de borrar Ticket
         botonBorrar.setOnClickListener(new View.OnClickListener() {
@@ -150,6 +140,37 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                 });
                 android.app.AlertDialog dialog = builder.create();
                 dialog.show();
+            }
+        });
+
+        //Configuración boton repetir comanda
+        botonRepetirComanda.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<DetalleDocumento> anadir=new ArrayList<>();
+                for (DetalleDocumento detalle:varGlob.getTicketActual().getDetallesTicket()) {
+                    if(detalle.isOtraRonda()){
+                        anadir.add(new DetalleDocumento(detalle));
+                        detalle.setOtraRonda(false);
+                    }
+                }
+                for(DetalleDocumento detalle:anadir){
+                    detalle.setEstadoComanda(0);
+                    varGlob.getTicketActual().getDetallesTicket().add(detalle);
+                }
+
+                System.out.println(anadir.toString());
+                cargaTicket();
+                System.out.println(varGlob.getTicketActual().getDetallesTicket().toString());
+            }
+        });
+
+        //Configuracion del boton de mandar a cocina
+        botonCocina.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                varGlob.setGuardarYsalirFamiliasArticulos(false);
+                actualizaDetallesYmandaCocina();
             }
         });
 
@@ -255,6 +276,8 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
         super.onStop();
     }
 
+    //Este es el metodo que android llama cuando te vas de un activity por decision propia, por interfaz, botones circulo y cuadrado (No la flecha para atras)
+    @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
         if(varGlob.isGuardarYsalirFamiliasArticulos()){
@@ -389,8 +412,8 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                 showPreguntaDialog(preguntas, 0, new ArrayList<>());
             } else {
                 //AÑADIR PRODUCTOS SIN PREGUNTAS
-                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual(),nuevaEntrada);
-                nuevaEntrada=false;
+                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), "", varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual(),varGlob.isNuevaEntrada());
+                varGlob.setNuevaEntrada(false);
                 cargaTicket();
             }
         }
@@ -441,8 +464,8 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
                                 showPreguntaDialog(preguntas, index + 1, opcionesSeleccionadas);
                             } else {
                                 //AÑADIR PRODUCTOS CON PREGUNTAS
-                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual(),nuevaEntrada);
-                                nuevaEntrada=false;
+                                varGlob.getTicketActual().anadirDetalleDocumentoVenta(varGlob.getArticuloActual(), varGlob.getTiposIVA(), varGlob.getTarifasDeVentas(), opcionesSeleccionadas.toString(), varGlob.getZonaActual().getIdTarifaVenta(),varGlob.getOrdenPreparacionActual(),varGlob.isNuevaEntrada());
+                                varGlob.setNuevaEntrada(false);
                                 cargaTicket();
                             }
                         });
@@ -466,42 +489,55 @@ public class ArticulosActivity extends AppCompatActivity implements AnadirInterf
 
     private void actualizaDetallesYmandaCocina() {
         if(!(varGlob.getTicketActual().getDetallesTicket().isEmpty())){
-            Toast.makeText(ArticulosActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
-            botonCocina.setEnabled(false);
-            botonCocina.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C4C4C4")));
-            Thread hilo = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
-                    ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
-                    ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
-                    ticketBD.actualizarTicket(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
-                    ticketBD.mandarCocina(varGlob.getTicketActual().getId());
-                    //Volver a mesas
-                    Intent intent = new Intent(ArticulosActivity.this, MesasActivity.class);
-                    startActivity(intent);
-                    finish();
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            botonCocina.setEnabled(true);
-                            botonCocina.setBackgroundTintList(null);
-                        }
-                    });
+            boolean algoPorMandar=false;
+            for (DetalleDocumento detalle:varGlob.getTicketActual().getDetallesTicket()) {
+                if(detalle.getEstadoComanda()==0){
+                    algoPorMandar=true;
+                    break;
                 }
-            });
+            }
+            if(algoPorMandar){
+                Toast.makeText(ArticulosActivity.this,"Ticket enviado a cocina",Toast.LENGTH_SHORT).show();
+                botonCocina.setEnabled(false);
+                botonCocina.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#C4C4C4")));
+                Thread hilo = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
 
-            // Iniciar el hilo
-            hilo.start();
+                        TicketBD ticketBD = new TicketBD(varGlob.getConexionSQL());
+                        ticketBD.actualizaEscribiendo(false,varGlob.getTicketActual().getId());
+                        ticketBD.borrarDetalles(varGlob.getTicketActual().getId());
+                        ticketBD.actualizarTicketMandarCocina(varGlob.getTicketActual().getDetallesTicket(),varGlob.getTicketActual().getId());
+                        ticketBD.mandarCocina(varGlob.getTicketActual().getId());
+                        //Volver a mesas
+                        Intent intent = new Intent(ArticulosActivity.this, MesasActivity.class);
+                        startActivity(intent);
+                        finish();
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                botonCocina.setEnabled(true);
+                                botonCocina.setBackgroundTintList(null);
+                            }
+                        });
+                    }
+                });
+
+                // Iniciar el hilo
+                hilo.start();
+            }else{
+                Toast.makeText(ArticulosActivity.this,"Nada por mandar a cocina",Toast.LENGTH_SHORT).show();
+            }
+
         }else{
             Toast.makeText(ArticulosActivity.this,"Ticket vacio no se puede mandar a cocina",Toast.LENGTH_SHORT).show();
         }
+
     }
 
 

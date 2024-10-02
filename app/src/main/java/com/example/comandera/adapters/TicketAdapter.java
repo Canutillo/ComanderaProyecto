@@ -4,10 +4,9 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.graphics.Color;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,6 +44,19 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         holder.tvDescripcionLarga.setText(detalle.getDescripcionLarga());
         holder.tvPVP.setText(String.valueOf(detalle.getPvp()));
         holder.tvTotal.setText(String.valueOf(detalle.getTotalLinea()));
+        int estado = detalle.getEstadoComanda();
+        switch (estado) {
+            case 0:
+                holder.itemView.setBackgroundColor(Color.parseColor("#ffffff"));
+                break;
+            case 1:  // Estado comanda mandada a Poss
+                holder.itemView.setBackgroundColor(Color.parseColor("#b3b3b3"));
+                break;
+            case 2:  // Estado comanda mandada a cocina
+                holder.itemView.setBackgroundColor(Color.parseColor("#b3b3b3"));
+                break;
+        }
+
         String resultado;
         int valor=detalle.getOrdenPreparacion();
         switch (valor) {
@@ -65,8 +77,10 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
                 break;
         }
         holder.ordenPreparacion.setText(resultado);
-        holder.anadir.setOnClickListener(v -> anadirBoton.onButton1Click(position));
-        holder.quitar.setOnClickListener(v -> anadirBoton.onButton2Click(position));
+        if(estado==0){
+            holder.anadir.setOnClickListener(v -> anadirBoton.onButton1Click(position));
+            holder.quitar.setOnClickListener(v -> anadirBoton.onButton2Click(position));
+        }
     }
 
     @Override

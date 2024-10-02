@@ -77,7 +77,7 @@ public class TicketBD {
     public void cargarDetallesEnTicket(Ticket ticket,Context context){
         if (ticket!=null){
             if (sqlServerConnection.getConexion() != null) {
-                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, precio, total_linea, cuota_iva,Orden_preparacion FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
+                String query = "SELECT articulo_id, descripcion_articulo, descripcion_larga, cantidad, precio, total_linea, cuota_iva,Orden_preparacion, Estado_Comanda, Otra_Ronda FROM Detalle_Documentos_Venta WHERE cabecera_id= ?";
                 try {
                     PreparedStatement statement = sqlServerConnection.getConexion().prepareStatement(query);
                     statement.setInt(1, ticket.getId());
@@ -95,6 +95,8 @@ public class TicketBD {
                         detalle.setCuotaIva(resultSet.getDouble("cuota_iva"));
                         detalle.setPvp(resultSet.getDouble("precio")+resultSet.getDouble("cuota_iva"));
                         detalle.setOrdenPreparacion(resultSet.getInt("Orden_preparacion"));
+                        detalle.setEstadoComanda(resultSet.getInt("Estado_Comanda"));
+                        detalle.setOtraRonda(resultSet.getBoolean("Otra_Ronda"));
                         ticket.getDetallesTicket().add(detalle);
                     }
                     resultSet.close();
@@ -209,9 +211,20 @@ public class TicketBD {
     public void actualizarTicket(List<DetalleDocumento> detalles, int ticketID){
         if (sqlServerConnection.getConexion() != null) {
             try {
-                String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea, Orden_preparacion) VALUES ";
+                String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea, Orden_preparacion, Estado_Comanda, Otra_Ronda) VALUES ";
                 for (DetalleDocumento detalle:detalles) {
-                    String detalleEscrito="("+ticketID+", "+detalle.getArticuloID()+", "+detalle.getCantidad()+", "+"'"+detalle.getDescripcion()+"'"+", "+"'"+detalle.getDescripcionLarga()+"'"+", "+detalle.getPrecio()+", "+detalle.getCuotaIva()+", "+detalle.getTotalLinea()+", "+detalle.getOrdenPreparacion()+") ,";
+                    String detalleEscrito = "("
+                            + ticketID + ", "
+                            + detalle.getArticuloID() + ", "
+                            + detalle.getCantidad() + ", "
+                            + "'" + detalle.getDescripcion() + "', "
+                            + "'" + detalle.getDescripcionLarga() + "', "
+                            + detalle.getPrecio() + ", "
+                            + detalle.getCuotaIva() + ", "
+                            + detalle.getTotalLinea() + ", "
+                            + detalle.getOrdenPreparacion() + ", "
+                            + detalle.getEstadoComanda() + ", "
+                            + (detalle.isOtraRonda() ? 1 : 0) + " ) ,";
                     insertQuery=insertQuery + detalleEscrito;
                 }
                 insertQuery=insertQuery.substring(0,insertQuery.length()-1);
@@ -225,6 +238,41 @@ public class TicketBD {
         }
 
     }
+
+    //Añade todas las lineas de detalles de un ticket cambiando el estado de comanda a 1
+    public void actualizarTicketMandarCocina(List<DetalleDocumento> detalles, int ticketID){
+        if (sqlServerConnection.getConexion() != null) {
+            try {
+                String insertQuery = "INSERT INTO Detalle_Documentos_Venta (Cabecera_Id, Articulo_Id, Cantidad, Descripcion_articulo, Descripcion_larga, precio, cuota_iva, total_linea, Orden_preparacion, Estado_Comanda, Otra_Ronda) VALUES ";
+                for (DetalleDocumento detalle:detalles) {
+                    String detalleEscrito = "("
+                            + ticketID + ", "
+                            + detalle.getArticuloID() + ", "
+                            + detalle.getCantidad() + ", "
+                            + "'" + detalle.getDescripcion() + "', "
+                            + "'" + detalle.getDescripcionLarga() + "', "
+                            + detalle.getPrecio() + ", "
+                            + detalle.getCuotaIva() + ", "
+                            + detalle.getTotalLinea() + ", "
+                            + detalle.getOrdenPreparacion() + ", "
+                            + (detalle.getEstadoComanda() == 0 ? 1 : detalle.getEstadoComanda()) + ", "
+                            + (detalle.isOtraRonda() ? 1 : 0) + " ) ,";
+
+                    insertQuery=insertQuery + detalleEscrito;
+                }
+                insertQuery=insertQuery.substring(0,insertQuery.length()-1);
+                insertQuery=insertQuery+";";
+                PreparedStatement insertStatement = sqlServerConnection.getConexion().prepareStatement(insertQuery);
+                insertStatement.executeUpdate();
+                insertStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
 
 
     public void actualizaMesaALibre(int idMesa){
