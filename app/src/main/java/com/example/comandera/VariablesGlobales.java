@@ -66,25 +66,25 @@ public class VariablesGlobales extends Application implements LifecycleObserver 
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
                 setNombreActivity(activity.getLocalClassName());
-                if (macActual == null) {
-                    System.out.println("Perdio los objetos en RAM va al main a recargarlos");
+                if (conexionSQL == null && !nombreActivity.equals("MainActivity")) {
                     Intent intent = new Intent(activity, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     activity.startActivity(intent); //
-                }
-                try {
-                    if (conexionSQL != null) {
-                        if (conexionSQL.getConexion().isClosed()) {
-                            System.out.println("La conexion estaba cerrada");
-                            conexionSQL.connect();
-                        } else {
+                    System.out.println("La conexion era nula se va a recargar la aplicacion para que no falle");
+                }else{
+                    if (conexionSQL!=null){
+                        try {
+                            System.out.println("No es nula pero no detecta que este cerrada");
+                            if(conexionSQL.getConexion().isClosed()){
+                                Intent intent = new Intent(activity, MainActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                activity.startActivity(intent); //
+                                System.out.println("La conexion estaba cerrada se va a recargar la aplicacion para que no falle");
+                            }
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
                         }
-                    }else{
-                        System.out.println("La conexion era nula y no ha recargado objetos en MAIN");
                     }
-                }catch(SQLException e){
-                    System.out.println("Error");
-                    throw new RuntimeException(e);
                 }
                 Log.d("TAG", "|||"+nombreActivity.toUpperCase()+"|||");
             }
